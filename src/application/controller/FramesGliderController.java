@@ -11,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.TilePane;
 import javafx.util.Duration;
 
 public class FramesGliderController {
@@ -47,10 +48,8 @@ public class FramesGliderController {
 			}
 			
 			if(initiallyPlaying == btnPlayPause.isSelected()){//XNOR
-				System.out.println("XNOR");
 				FramesGlider.pausePauseTimer();
 			} else if(initiallyPlaying && !btnPlayPause.isSelected() || !initiallyPlaying && btnPlayPause.isSelected()) {//XOR
-				System.out.println("XOR");
 				FramesGlider.playPauseTimer();
 			}
 			e.consume(); //avoid bubbling
@@ -81,7 +80,6 @@ public class FramesGliderController {
 //				System.out.println("Min Rate Reached");
 			Duration currRate = FramesGlider.getRate();
 			Duration newRate = currRate.subtract(accStep); //less time
-//			System.out.println("new rate; " + newRate);
 			if(newRate.compareTo(fastestRate) >0) {//newRate>0 
 				FramesGlider.setRate(newRate);
 			} else {
@@ -97,10 +95,8 @@ public class FramesGliderController {
 			//slowestRate already reached
 			if(maxRateReached) 
 				return;
-			//	System.out.println("Slowest Rate already reached: " + slowestRate);
 			Duration currRate = FramesGlider.getRate();
 			Duration newRate = currRate.add(decStep); //increase sleepTime of pauseTransition
-//			System.out.println("new rate; " + newRate);
 			if(newRate.compareTo(slowestRate) < 0){ //newRate < slowestRate 
 				FramesGlider.setRate(newRate);
 			} else {
@@ -111,21 +107,22 @@ public class FramesGliderController {
 		
 	};
 
-	public static void fireAcceleratorPressEvent(){
-		Button btnAcc = FramesGlider.getBtnAccelerator();
-		if(btnAcc == null) {
-			return; 
-		}
-		btnAcc.fireEvent(
-			new MouseEvent(MouseEvent.MOUSE_PRESSED,
-			btnAcc.getLayoutY() , btnAcc.getLayoutY(), 
-			btnAcc.getLayoutX(), btnAcc.getLayoutY(), 
-			MouseButton.PRIMARY, 1,
-            true, true, true, true, true, 
-            true, true, true, true, true, 
-            null
-        ));
-	}
+//	public static void fireAcceleratorPressEvent(){
+//		Button btnAcc = FramesGlider.getBtnAccelerator();
+//		if(btnAcc == null) {
+//			return; 
+//		}
+//		btnAcc.fireEvent(
+//			new MouseEvent(MouseEvent.MOUSE_PRESSED,
+//			btnAcc.getLayoutY() , btnAcc.getLayoutY(), 
+//			btnAcc.getLayoutX(), btnAcc.getLayoutY(), 
+//			MouseButton.PRIMARY, 1,
+//            true, true, true, true, true, 
+//            true, true, true, true, true, 
+//            null
+//        ));
+//	}
+	
 	
 	public static void fireAcceleratorReleaseEvent(){
 		Button btnAcc = FramesGlider.getBtnAccelerator();
@@ -144,21 +141,21 @@ public class FramesGliderController {
         ));
 	}
 	
-	public static void fireDeceleratorPressEvent(){
-		Button btnDec = FramesGlider.getBtnDecelerator();
-		if(btnDec == null) {
-			return; 
-		}
-		btnDec.fireEvent(
-			new MouseEvent(MouseEvent.MOUSE_PRESSED,
-			btnDec.getLayoutY() , btnDec.getLayoutY(), 
-			btnDec.getLayoutX(), btnDec.getLayoutY(), 
-			MouseButton.PRIMARY, 1,
-            true, true, true, true, true, 
-            true, true, true, true, true, 
-            null
-        ));
-	}
+//	public static void fireDeceleratorPressEvent(){
+//		Button btnDec = FramesGlider.getBtnDecelerator();
+//		if(btnDec == null) {
+//			return; 
+//		}
+//		btnDec.fireEvent(
+//			new MouseEvent(MouseEvent.MOUSE_PRESSED,
+//			btnDec.getLayoutY() , btnDec.getLayoutY(), 
+//			btnDec.getLayoutX(), btnDec.getLayoutY(), 
+//			MouseButton.PRIMARY, 1,
+//            true, true, true, true, true, 
+//            true, true, true, true, true, 
+//            null
+//        ));
+//	}
 
 	public static void fireDeceleratorReleaseEvent(){
 		Button btnAcc = FramesGlider.getBtnDecelerator();
@@ -179,6 +176,7 @@ public class FramesGliderController {
 	public static int getLastLoadedFrame() {
 		return lastLoadedFrame;
 	}
+	
 	public static void setLastLoadedFrame(int idx) {
 		FramesGliderController.lastLoadedFrame = idx;
 	}
@@ -189,8 +187,6 @@ public class FramesGliderController {
 
 	public static void IncremenetLastLoadedFrame() {
 		FramesGliderController.lastLoadedFrame++;
-//		System.out.println("incremented lli: from: " + (FramesGliderController.lastLoadedFrame -1) + 
-//				"to: " + FramesGliderController.lastLoadedFrame );
 	}
 	
 	public static Image getBlackScreenImage() {
@@ -211,6 +207,25 @@ public class FramesGliderController {
 	
 	public static Duration getInitFrameRate() {
 		return FramesGliderController.initFrameRate;
+	}
+	
+	public static void fireNoOpMouseEvent(){
+		TilePane cp = FramesGlider.getControlPane();
+		if(cp == null) {
+			return;
+		}
+	   	System.out.println("NO OP");
+		cp.fireEvent(
+			new MouseEvent(MouseEvent.MOUSE_PRESSED,
+			cp.getLayoutY() , cp.getLayoutY(), 
+			cp.getLayoutX(), cp.getLayoutY(), 
+			MouseButton.PRIMARY, 1,
+            true, true, true, true, true, 
+            true, true, true, true, true, 
+            null
+        ));
+
+
 	}
 }
 
