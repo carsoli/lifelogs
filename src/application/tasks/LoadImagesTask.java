@@ -43,14 +43,26 @@ public class LoadImagesTask extends Task {
 			ArrayList<Day> pDays= mDataSource.getData().get(MainController.getChosenP()).getDays();
 			for(Day d: pDays) {
 				ArrayList<Event> dEvents = d.getEvents();
+				//****************
+				//if the same day is loaded twice for any reason, 
+				//we would add the FImages for it twice(double the size)
+				//when calling "d.addFImage(i)" inside the inner-most forLoop
+				if(d.getFImages().size() > 0) {
+					d.getFImages().clear();
+//					System.out.println("cleared day fImages; d.getFImages().size(): " + d.getFImages().size());
+				}
+				
 				for(Event event :dEvents) {
 					File[] eventImages = event.getFImages();
+					
+						
 					
 					for(File i: eventImages) {
 						//for VideoPlayer
 						final ImageView gridImageView = ViewUtils.createImageView(i, 
 								Constants.IMAGE_SIZE, 0);
-						d.addFImage(i);
+						
+						d.addFImage(i); 
 
 						final HBox imageHBox = new HBox();
 						Platform.runLater(new Runnable() {
