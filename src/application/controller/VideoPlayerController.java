@@ -14,6 +14,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.TilePane;
 import javafx.scene.media.MediaPlayer;
 
 
@@ -186,5 +187,25 @@ public class VideoPlayerController {
             null
         ));
 	}
+	
+	//INITIALLY IN MAIN CONTROLLER: 
+	public static void fireNoOpMouseEvent() {
+		TilePane cp = VideoPlayer.getControlPane();
+		if(cp == null) {
+			return;
+		}
+	   	System.out.println("NO OP");
+		cp.fireEvent(
+			new MouseEvent(MouseEvent.MOUSE_PRESSED,
+			cp.getLayoutY() , cp.getLayoutY(), 
+			cp.getLayoutX(), cp.getLayoutY(), 
+			MouseButton.PRIMARY, 1,
+            true, true, true, true, true, 
+            true, true, true, true, true, 
+            null
+        ));
+
+	}
+
 
 }
