@@ -56,6 +56,10 @@ public class FramesGlider {
 		controlPane.setDisable(false);
 	}
 	
+	public static TilePane getControlPane() {
+		return FramesGlider.controlPane;
+	}
+	
 	//called in viewUtils when initializing Scene
 	public static Tab initializeFrameGliderTab() {
 		framesGliderTab = new TabPaneItem(2, Constants.TAB2_TITLE, false);
@@ -90,16 +94,17 @@ public class FramesGlider {
 		totalFrames = ViewUtils.getChosenImages().size(); 
 		//limited size buffer
 		FramesBufferController.setBuffer(framesBuffer);
+		
 		isInitiallyPlaying = autoPlay;
 		pauseTimer = new PauseTransition(frameRate);
 		bufferSize = FramesBufferController.getBuffer().size();
+
 		
 		pauseTimer.setOnFinished(e -> {
 			lastLoadedIdx = FramesGliderController.getLastLoadedFrame();//initially set by bufferTask
 			
 			if(currBufferPtr == stopPtr) {
 			//no need to continue displaying, we already displayed the last image in the previous call; return in the end
-				System.out.println("stopping anim func");
 				//if you need to replace stopPlayingAndReset() w/ code inside it, don't forget to leave the return statement
 				stopPlayingAndReset();
 				return; 
@@ -146,12 +151,15 @@ public class FramesGlider {
 
 		controlPane = initializeGliderControls();
 		controlPane.setAlignment(Pos.BASELINE_CENTER);
-		if(framesGliderInnerVB.getChildren().size() == 1) {
-			//if controlPane is already added, don't add it again
-			//we are however sure that the size will be at least 2, b/c frameHBox
+		if(framesGliderInnerVB.getChildren().size() == 2) {
+			//re-initialize controlPane even if it exists b/c playPauseButton
+			//and its related flags change when the video is stopped/ends
+			//remove the old one then add it 
+			//the size is always be AT LEAST 1, b/c frameHBox
 			//is added in viewUtils' initializeScene()
-			framesGliderInnerVB.getChildren().add(controlPane);
+			framesGliderInnerVB.getChildren().remove(1);
 		} 
+		framesGliderInnerVB.getChildren().add(controlPane);
 		
 		if(isInitiallyPlaying && !isStopped)
 			pauseTimer.playFromStart(); //first call
@@ -287,7 +295,6 @@ public class FramesGlider {
 	
 	public static void updateFrameHBox() {
 		frameHBox.getChildren().remove(0);
-//		System.out.println("displaying curr buff ptr: " + currBufferPtr);
 		frameHBox.getChildren().add(FramesBufferController.getBuffer().get(currBufferPtr));
 	}
 	
@@ -332,11 +339,8 @@ public class FramesGlider {
 		FramesGlider.pauseTimer.pause();
 	}
 	
-	
 	public static void setRate(Duration newRate) {
-//		pauseTimer.stop();
 		pauseTimer.setDuration(newRate);
-//		pauseTimer.playFromStart();
 	}
 	
 	public static Duration getRate() {
@@ -345,39 +349,3 @@ public class FramesGlider {
 
 
 }
-
-//@SuppressWarnings("rawtypes")
-//class createImageViewTask extends Task {
-//	private File imgFile;
-//	private double fitWidth, fitHeight;
-//	
-//	public createImageViewTask(File img, double fitW, double fitH) {
-//		this.imgFile = img;
-//		this.fitWidth = fitW;
-//		this.fitHeight = fitH;
-//	}
-//	
-//	@Override
-//	protected Object call() throws Exception {
-//		ImageView imageView = null;
-//        try {			                	
-//        	final Image image = new Image(new FileInputStream(imgFile), 
-//        			fitWidth, fitHeight, true, false);
-//            imageView = new ImageView(image);
-//
-//        } catch(FileNotFoundException e1) {
-//        	System.out.println("Image File not found");
-//        	e1.printStackTrace();
-//        } catch(SecurityException e2) {
-//        	System.out.println("Denied Access to Image File");
-//        	e2.printStackTrace();
-//        } catch(Exception e) {
-//        	e.printStackTrace();
-//        }
-//
-//	       		
-//		return imageView;
-//	}
-//	
-//}
-//
