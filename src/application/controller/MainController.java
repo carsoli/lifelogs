@@ -5,18 +5,16 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import application.structs.DataSource;
+import application.view.FramesGlider;
 import application.view.VideoPlayer;
 import application.utils.Constants;
 import application.view.ViewUtils;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.TilePane;
 
 public class MainController {
-	private static int chosenP = -1; //TODO: ATOMIC INT
+	private static int chosenP = -1; 
 	private static int chosenD = -1; 
 	private static DataSource mDataSource = null; 
 	private static boolean rightKeyPressed = false, leftKeyPressed = false; 
@@ -117,26 +115,47 @@ public class MainController {
 				if(VideoPlayer.getBtnPlayPause() != null) {
 					VideoPlayer.getBtnPlayPause().fire();
 				}
-				fireNoOpMouseEvent();//HACK: to unfocus on the button and allow further event handling;
+				/*HACK: removes focus from the button and allows further event handling*/
+				VideoPlayerController.fireNoOpMouseEvent();
+				//==============================
+				if(FramesGlider.getBtnPlayPause() != null) {
+					FramesGlider.getBtnPlayPause().fire();
+				}
+				FramesGliderController.fireNoOpMouseEvent();
 				e.consume();
 				break;
 			case S: 
 				if(VideoPlayer.getBtnStop() != null) {
 					VideoPlayer.getBtnStop().fire();
 				}
-				fireNoOpMouseEvent();
+				VideoPlayerController.fireNoOpMouseEvent();
+				//==============================
+				if(FramesGlider.getBtnStop() != null) {
+					FramesGlider.getBtnStop().fire();
+				}
+				FramesGliderController.fireNoOpMouseEvent();
 				e.consume();
 				break;
 			case RIGHT:
 				rightKeyPressed = false;
 				VideoPlayerController.fireAcceleratorReleaseEvent();
-				fireNoOpMouseEvent();
+				VideoPlayerController.fireNoOpMouseEvent();
+				//===============================
+				//NOT A PRESS AND HOLD
+				//WORKS BUT DON"T SPAM IT: SPAM THE MOUSE CLICKS (FASTER & DON'T BREAK)
+				FramesGliderController.fireAcceleratorReleaseEvent();
+				FramesGliderController.fireNoOpMouseEvent();
+				
 				e.consume();
 				break;
 			case LEFT: 
 				leftKeyPressed = false;
 				VideoPlayerController.fireDeceleratorReleaseEvent();
-				fireNoOpMouseEvent();
+				VideoPlayerController.fireNoOpMouseEvent();
+				//================================
+				FramesGliderController.fireDeceleratorReleaseEvent();
+				FramesGliderController.fireNoOpMouseEvent();
+				
 				e.consume();
 				break;
 			default:
@@ -152,7 +171,7 @@ public class MainController {
 						System.out.println("key pressed");
 						rightKeyPressed = true;
 						VideoPlayerController.fireAcceleratorPressEvent();
-						fireNoOpMouseEvent();
+						VideoPlayerController.fireNoOpMouseEvent();
 					}
 					e.consume(); //MUST CONSUME OUTSIDE;; because otherwise the tabs will switch
 					break;
@@ -160,7 +179,7 @@ public class MainController {
 					if(!leftKeyPressed) {
 						leftKeyPressed = true;
 						VideoPlayerController.fireDeceleratorPressEvent();
-						fireNoOpMouseEvent();
+						VideoPlayerController.fireNoOpMouseEvent();
 					}
 					e.consume();
 					break;
@@ -170,24 +189,7 @@ public class MainController {
 
 	};
 
-	public static void fireNoOpMouseEvent() {
-		TilePane cp = VideoPlayer.getControlPane();
-		if(cp == null) {
-			return;
-		}
-	   	System.out.println("NO OP");
-		cp.fireEvent(
-			new MouseEvent(MouseEvent.MOUSE_PRESSED,
-			cp.getLayoutY() , cp.getLayoutY(), 
-			cp.getLayoutX(), cp.getLayoutY(), 
-			MouseButton.PRIMARY, 1,
-            true, true, true, true, true, 
-            true, true, true, true, true, 
-            null
-        ));
-
-	}
-	
+		
 	public static void installKeyEventHandlers() {
         //KEY PRESS IS DETECTED ANYWHERE IN THE inner-most container of videoPlayer class DOESNT WORK 
 		//TODO TRY TO LIMIT IT TO VideoVBox (inner most container of videoplayer)
