@@ -11,6 +11,7 @@ import com.github.kokorin.jaffree.ffmpeg.UrlOutput;
 
 import application.controller.MainController;
 import application.controller.VideoPlayerController;
+import application.structs.Participant;
 import application.utils.Constants;
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
@@ -33,24 +34,24 @@ public class VideoPlayer {
 	private static MediaPlayer mp = null;
 	private static TilePane controlPane = null;
 	private static MediaView mv = null;
-	private static ImageButton btnVolumeDown, btnDecelerator, 
-	btnStop, btnAccelerator, btnVolumeUp;
+	private static ImageButton btnDecelerator, 
+	btnStop, btnAccelerator;
 	
 	//wait for (pauseTime) then call the Timer again (similar to Anim/Timer in openCV)
-	private static final Duration pauseTime = Duration.millis(200);
+	private static final Duration pauseTime = Duration.millis(500);
 	
 	private static PauseTransition accHoldTimer = null, decHoldTimer = null;
-	private static int accPressedCycles = 0, decPressedCycles = 0; 
-	//range of MediaPlayer.Rate is 0..8 (double); 0..1 (decelerator), 1..8 (accelerator)
-	private static final double initPlayRate = 1.0, maxRate = 8, minDec = 0.1;
+//	private static int accPressedCycles = 0, decPressedCycles = 0; 
+	private static final double initPlayRate = 1.0, maxRate = 8, minRate = 0.125; 
+	private static final double maxAcc = maxRate - initPlayRate;
+	private static final double minDec = minRate - initPlayRate; 
+	
 	//takes {x} cycles to reach max desired rate (max and 10 are set according to preference
-	private static final double accStep = (maxRate-initPlayRate+1)/10; //5-sec-press
+	private static final double accStep = (maxRate-initPlayRate)/10; //+ve slope
 	//takes {x} cycles to reach min rate
-	private static final double decStep = (initPlayRate-minDec+1)/10; 
+	private static final double decStep = (minRate - initPlayRate)/10; //-ve slope  
 	private static double acc = 0, dec = 0;
 
-	
-	
 	private static ImageToggleButton btnPlayPause;
 	private static TilePane videoTP = null; 
 	private static VBox videoVBox = null; 
@@ -61,57 +62,58 @@ public class VideoPlayer {
 	
 	public static Tab initializeVideosTab() {
         videosTab = new TabPaneItem(1, Constants.TAB1_TITLE, false);
-        VBox videoTabVBox = (VBox)videosTab.getContent(); //main container in the tab
-
-        ScrollPane videoSP = new CustomScrollPane(ViewUtils.getMainScene()); //2nd main container
+        //main container in the tab
+        VBox videoTabVBox = (VBox)videosTab.getContent(); 
+        //2nd main container
+        ScrollPane videoSP = new CustomScrollPane(ViewUtils.getMainScene()); 
 		videoTabVBox.getChildren().add(videoSP);
-		
-        videoTP = (TilePane)videoSP.getContent(); //3rd container: useless
+		//3rd container: useless
+        videoTP = (TilePane)videoSP.getContent(); 
         videoTP.setPadding(new Insets(0, 0, 0, 0)); //override the styling in the class
-
-		videoVBox = new VBox();//4th container
+        //4th container
+		videoVBox = new VBox();
         videoVBox.setStyle(Constants.BG_BLACK);
         videoVBox.setAlignment(Pos.TOP_CENTER);
-		videoVBox.prefWidthProperty().bind(ViewUtils.getMainScene().widthProperty());
 		videoVBox.prefHeightProperty().bind(ViewUtils.getMainScene().heightProperty());
 
 		return videosTab;
 	}
 
 	public static void postProcessVideo() {
-//		String inputFileName = MainController.getmDataSource().
-//				getData().get(MainController.getChosenP()).
-//				getParticipantName() + MainController.getChosenD() + ".mp4";
-//		
-//		inputFilePath = new File(inputFileName).getAbsolutePath();
-//		outputFilePath = inputFilePath.replace(".mp4", "scaledDown.mp4");
-//
-//		ProgressListener listener = new ProgressListener() {
-//		    @Override
-//		    public void onProgress(FFmpegProgress progress) {
-////		        System.out.println("progress?");
-//		    }
-//		};
-//		System.out.println("Post Processing: Scaling Video...");
-//		FFmpeg.atPath(Constants.FFMPEG_BIN)
-//		        .addInput(UrlInput.fromPath( Paths.get(inputFilePath) ))
-//		        .addOutput(UrlOutput.toPath( Paths.get(outputFilePath) ))
-//		        .addArguments("-vf", "scale=1440:1080")
-//		        .setOverwriteOutput(true)
-//		        .setProgressListener(listener)
-//		        .execute();
-//		System.out.println("done with post processing");
+		Participant chosenParticipant = MainController.getmDataSource().getData().get(MainController.getChosenP());
+		String inputFileName = chosenParticipant.getParticipantName() + 
+				chosenParticipant.getDays().get(MainController.getChosenD()).getName()
+				+ ".mp4";
+				
+		inputFilePath = new File(inputFileName).getAbsolutePath();
+		outputFilePath = inputFilePath.replace(".mp4", "scaledDown.mp4");
+
+		ProgressListener listener = new ProgressListener() {
+		    @Override
+		    public void onProgress(FFmpegProgress progress) {
+//		        System.out.println("progress?");
+		    }
+		};
+		System.out.println("Post Processing: Scaling Video...");
+		FFmpeg.atPath(Constants.FFMPEG_BIN)
+		        .addInput(UrlInput.fromPath( Paths.get(inputFilePath) ))
+		        .addOutput(UrlOutput.toPath( Paths.get(outputFilePath) ))
+		        .addArguments("-vf", "scale=1440:1080")
+		        .setOverwriteOutput(true)
+		        .setProgressListener(listener)
+		        .execute();
+		System.out.println("done with post processing");
     	Tab videosTab = updateVideosTab();
     	ViewUtils.setVideosTab(videosTab);
 	}
 	
 	public static Tab updateVideosTab() {
 		String videoPath = "", videoURI = "";
-		String videoFileName = Constants.VIDEO_STATIC_URL;
+//		String videoFileName = Constants.VIDEO_STATIC_URL;
 
 		try {
-        	videoPath = new File(videoFileName).getAbsolutePath();
-//        	videoPath = new File(outputFilePath).getAbsolutePath();
+//        	videoPath = new File(videoFileName).getAbsolutePath();
+        	videoPath = new File(outputFilePath).getAbsolutePath();
         	videoURI = new File(videoPath).toURI().toString();
         	Media video = new Media(videoURI);
         	System.out.println("checking video src:" + video.getSource());
@@ -191,26 +193,28 @@ public class VideoPlayer {
 		accHoldTimer.setOnFinished(e -> {
 			//after every PauseTime:
 			//increment pressed cycles, add acceleration, update rate, pause again(playFromStart())
-			accPressedCycles++; //gets reset
-			acc = accPressedCycles*accStep;
-			System.out.println("pressed cycles:" + accPressedCycles);
+			acc += accStep;
 			System.out.println("acceleration: "+ acc);
 			System.out.println("new rate: "+ (initPlayRate + acc));
-			
-			if(acc > maxRate) {
-				System.out.println("============exceeded max acc===============");
-//				return;
+			if(acc < maxAcc) {
+				System.out.println("did NOT exceed max acc");
+				System.out.println("==============================");
+				mp.setRate((initPlayRate + acc));
 			}
-
-			mp.setRate((initPlayRate + acc));
-			//set rate does not take effect
-			
 			accHoldTimer.playFromStart();
 		});	
-		
+		//=======================
 		decHoldTimer = new PauseTransition(pauseTime);
 		decHoldTimer.setOnFinished(e -> {
-			decPressedCycles++;
+			dec+= decStep;
+			System.out.println("dec: "+ dec);
+			System.out.println("new rate:" + (initPlayRate + dec));
+
+			if(dec > minDec) {//comparing negative magnitudes
+				System.out.println("did NOT exceed min dec");
+				System.out.println("==============================");
+				mp.setRate((initPlayRate + dec));
+			}
 			decHoldTimer.playFromStart();
 		});	
 	}
@@ -242,7 +246,7 @@ public class VideoPlayer {
 		 	we need the handler to be called anywhere in the video container
 		 	thus, we add it to the scene (installKeyHandlers())
 		 */
-//		btnFastForward.setOnKeyPressed(MainController.keyPressedHandler);
+//		btnAccelerator.setOnKeyPressed(MainController.keyPressedHandler);
 		//=========
 		btnStop = new ImageButton(Constants.STOP_IMG);
 		btnStop.addEventHandler(ActionEvent.ANY, VideoPlayerController.stopHandler);
@@ -255,11 +259,9 @@ public class VideoPlayer {
 
 		controlPane.setPadding(new Insets(10, 5, 10, 5));
 		controlPane.getChildren().addAll(
-//				btnVolumeDown, 
 				btnDecelerator, 
 				btnPlayPause, btnStop,
 				btnAccelerator); 
-//				btnVolumeUp);
     	return controlPane;
 	}
 
@@ -269,14 +271,6 @@ public class VideoPlayer {
 	
 	public static ImageButton getBtnStop() {
 		return btnStop;
-	}
-	
-	public static ImageButton getBtnVolumeUp() {
-		return btnVolumeUp;
-	}
-	
-	public static ImageButton getBtnVolumeDown() {
-		return btnVolumeDown;
 	}
 
 	public static void setBtnPlayPause(ImageToggleButton btnPlayPause) {
@@ -315,83 +309,13 @@ public class VideoPlayer {
 		return decHoldTimer;
 	}
 	
-	public static int getAccPressedCycles() {
-		return accPressedCycles;
+	public static void setAcc(double acc) {
+		VideoPlayer.acc = acc;
 	}
 	
-	public static void setAccPressedCycles(int cycles) {
-		VideoPlayer.accPressedCycles = cycles;
-	}
-
-	public static int getDecPressedCycles() {
-		return decPressedCycles;
+	public static void setDec(double dec) {
+		VideoPlayer.dec = dec;
 	}
 	
-	public static void setDecPressedCycles(int cycles) {
-		VideoPlayer.decPressedCycles = cycles;
-	}
-
 }
 
-//public static EventHandler<Event> playPauseHandler = new EventHandler<Event>() {
-//public void handle(Event e) {
-//	System.out.println("HANDLE PLAY PAUSE");
-//	if(btnPlayPause.isSelected()) {
-//		btnPlayPause.setSelectedBG();
-//	} else {
-//		btnPlayPause.setUnselectedBG();
-//	}
-//	
-//	if(initiallyPlaying == btnPlayPause.isSelected()){//XNOR
-//		mp.pause();
-//	} else if(initiallyPlaying && !btnPlayPause.isSelected() || !initiallyPlaying && btnPlayPause.isSelected()) {//XOR
-//		mp.play();
-//	}
-//	e.consume();
-//}
-//};
-//
-//public static EventHandler<Event> stopHandler = new EventHandler<Event>() {
-//public void handle(Event e) {
-//mp.stop();
-//if(initiallyPlaying && !btnPlayPause.isSelected()) {
-///*if initially playing & the btn is NOT selected; 
-//	video was playing when stop was clicked ->
-//	need to toggle the ImageButton's image
-//*/
-//	btnPlayPause.setSelected(true);
-//	btnPlayPause.setSelectedBG();
-//}
-//if(!initiallyPlaying && btnPlayPause.isSelected()) {
-//	btnPlayPause.setSelected(false);
-//	btnPlayPause.setUnselectedBG();
-//}
-//e.consume();//to avoid the event from going to the parent node
-//}
-//};
-
-
-//================ put it in the part after btnStop adding handlers
-//btnVolumeUp = new ImageButton(Constants.VOLUMEUP_IMG);
-//EventHandler<Event> volumeUpHandler = new EventHandler<Event>() {
-//	public void handle(Event e) {
-//		double currVolume = mp.getVolume();
-//		if(currVolume <= 1.0)
-//			mp.setVolume(currVolume+=0.1);
-//	}
-//};
-//btnVolumeUp.setOnMouseReleased(volumeUpHandler);
-//btnVolumeUp.setOnTouchReleased(volumeUpHandler);
-//btnVolumeUp.setOnKeyReleased(MainController.keyReleasedHandler); 
-
-//btnVolumeDown = new ImageButton(Constants.VOLUMEDOWN_IMG);
-//EventHandler<Event> volumeDownHandler = new EventHandler<Event>() {
-//	public void handle(Event e) {
-//		double currVolume = mp.getVolume();
-//		if(currVolume >= 0)
-//			mp.setVolume(currVolume-=0.1);
-//	}
-//};
-//btnVolumeDown.setOnMouseReleased(volumeDownHandler);
-//btnVolumeDown.setOnTouchReleased(volumeDownHandler);
-//btnVolumeDown.setOnKeyReleased(MainController.keyReleasedHandler); 

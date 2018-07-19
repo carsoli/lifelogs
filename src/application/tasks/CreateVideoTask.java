@@ -28,18 +28,14 @@ public class CreateVideoTask extends Task{
 	}
 
 	private void createDayVideo(int dayIdx) { 
-		this.dayIdx = dayIdx;
-		//TODO: the file name varies according to P & D 
-		//the user may choose multiple Days, and we can execute both tasks, 
-		//however play only the last chosen D? 
-		//or maybe generate a grid of videos
 		int chosenPIndex = MainController.getChosenP();
 		DataSource mDataSource = MainController.getmDataSource();
 		Participant chosenParticipant = mDataSource.getData().get(chosenPIndex);
 		Day chosenDay = chosenParticipant.getDays().get(dayIdx);
-		String outputFileName =  chosenParticipant.getParticipantName() + "-" 
-				+ chosenDay.getName() + ".mp4"; 
-		//WHAT!
+		//instead of passing an argument:
+//		Day chosenDay = chosenParticipant.getDays().get(MainController.getChosenD());
+		String outputFileName =  chosenParticipant.getParticipantName() + chosenDay.getName() + ".mp4"; 
+		
 		ImagesToVideoConverter.initializeConvertor(outputFileName, 
 			Constants.FORMAT_NAME, Constants.CODEC_NAME, Constants.FPS, 
 			Constants.DEFAULT_IMAGE_WIDTH, 
@@ -51,13 +47,7 @@ public class CreateVideoTask extends Task{
 		for(File img: fImages) {//all images for this day
 			buffImg = ViewUtils.createBufferedImage(img);
 			ImagesToVideoConverter.encodeImageFile(buffImg, frameIndex);
-			frameIndex++;
-			/*Failed (humble breaks)*/
-//			Task encodingTask = new EncodeFrameTask(frameIndex, img);
-//			MainController.addTask(encodingTask);
-//			MainController.execute(encodingTask);
-//			frameIndex++;
-			
+			frameIndex++;			
 		}
 	
 	}

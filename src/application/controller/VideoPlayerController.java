@@ -5,6 +5,7 @@
  */
 package application.controller;
 
+
 import application.view.ImageToggleButton;
 import application.view.VideoPlayer;
 import javafx.event.ActionEvent;
@@ -20,7 +21,9 @@ public class VideoPlayerController {
 	private static ImageToggleButton btnPlayPause = VideoPlayer.getBtnPlayPause();
 	private static boolean initiallyPlaying = VideoPlayer.isInitiallyPlaying();
 	private static MediaPlayer mp = VideoPlayer.getMediaPlayer();
-	
+	//for logging purposes
+	private static long accStartTime = 0, decStartTime = 0, accEndTime = 0, decEndTime = 0;
+
 	public static EventHandler<ActionEvent> playPauseHandler = new EventHandler<ActionEvent>() {
 		public void handle(ActionEvent e) {
 			if(btnPlayPause == null) {
@@ -48,7 +51,7 @@ public class VideoPlayerController {
 			}
 			mp.stop();
 			if(initiallyPlaying && !btnPlayPause.isSelected()) {
-			/*if initially playing & the btn is NOT selected; 
+			/*if initially playing & the button is NOT selected; 
 				video was playing when stop was clicked ->
 				need to toggle the ImageButton's image
 			*/
@@ -67,24 +70,18 @@ public class VideoPlayerController {
 		//this is only called once at the event of Mouse Press
 		@Override
 		public void handle(Event event) {
-//			acc = VideoPlayer.getAccPressedCycles()*accStep;
-//			System.out.println("acceleration: "+ acc);
-//			if(acc < maxAcc) {
-//				mp.setRate(initPlayRate + acc);
-//			}
+			accStartTime = System.currentTimeMillis();
 			VideoPlayer.getAccHoldTimer().playFromStart(); //start the timer
 		}
 	};
+
 	//TODO: handle the case where the user pressed both RIGHT and LEFT Keys 
 	//(two mouse presses are not possible but two key presses are)
+	//b/c both access setRate ; this is not feasible with the knob
 	public static EventHandler<Event> deceleratorPressHandler = new EventHandler<Event>() {
 		@Override
 		public void handle(Event event) {
-//			if(dec>minDec) {
-//				dec = VideoPlayer.getDecPressedCycles()*decStep;
-//				System.out.println("rate:" + mp.getRate());
-//				mp.setRate(initPlayRate - dec);
-//			}
+			decStartTime = System.currentTimeMillis();
 			VideoPlayer.getDecHoldTimer().playFromStart();
 		}
 	};
@@ -92,26 +89,33 @@ public class VideoPlayerController {
 	public static EventHandler<Event> acceleratorReleaseHandler = new EventHandler<Event>() {
 		@Override
 		public void handle(Event event) {
-			System.out.println("Acc Press Duration:" + VideoPlayer.getAccPressedCycles()*1000 + " ms");
-//			mp.setRate(VideoPlayer.getInitPlayRate());
+			accEndTime = System.currentTimeMillis();
+			System.out.println("acc press duration: " + (accEndTime - accStartTime) + " ms");
+			accEndTime = 0;
+			accStartTime = 0;
+			
 			if(mp != null) {
 				mp.setRate(1);
 			}
-			VideoPlayer.setAccPressedCycles(0);
+//			VideoPlayer.setAccPressedCycles(0);
+			VideoPlayer.setAcc(0);
 			VideoPlayer.getAccHoldTimer().stop();
 		}
 	};
-	//TODO:
+
 	public static EventHandler<Event> deceleratorReleaseHandler = new EventHandler<Event>() {
 		@Override
 		public void handle(Event event) {
-			// TODO Auto-generated method stub
-			//100 = pauseTime
-			System.out.println("Dec Press Duration: " + VideoPlayer.getDecPressedCycles()*100 + " ms");
-//			mp.setRate(initPlayRate);
-			mp.setRate(1);
-			VideoPlayer.setDecPressedCycles(0);
-//			dec = 0;
+			decEndTime = System.currentTimeMillis();
+			System.out.println("acc press duration: " + (decEndTime - decStartTime) + " ms");
+			decEndTime = 0;
+			decStartTime = 0;
+			
+			if(mp != null) {
+				mp.setRate(1);
+			}
+//			VideoPlayer.setDecPressedCycles(0);
+			VideoPlayer.setDec(0);
 			VideoPlayer.getDecHoldTimer().stop();
 		}
 		
@@ -119,15 +123,14 @@ public class VideoPlayerController {
 
 
 	public static void fireAcceleratorPressEvent(){
-		Button ff = VideoPlayer.getBtnAccelerator();
-		if(ff == null) {
+		Button btnAcc = VideoPlayer.getBtnAccelerator();
+		if(btnAcc == null) {
 			return; 
 		}
-//		System.out.println("firing acc press");
-		ff.fireEvent(
+		btnAcc.fireEvent(
 			new MouseEvent(MouseEvent.MOUSE_PRESSED,
-			ff.getLayoutY() , ff.getLayoutY(), 
-			ff.getLayoutX(), ff.getLayoutY(), 
+			btnAcc.getLayoutY() , btnAcc.getLayoutY(), 
+			btnAcc.getLayoutX(), btnAcc.getLayoutY(), 
 			MouseButton.PRIMARY, 1,
             true, true, true, true, true, 
             true, true, true, true, true, 
@@ -136,16 +139,15 @@ public class VideoPlayerController {
 	}
 	
 	public static void fireAcceleratorReleaseEvent(){
-		Button ff = VideoPlayer.getBtnAccelerator();
-		if(ff == null) {
+		Button btnAcc = VideoPlayer.getBtnAccelerator();
+		if(btnAcc == null) {
 			return;
 		}
-//		System.out.println("firing acc release");
 
-		ff.fireEvent(
+		btnAcc.fireEvent(
 			new MouseEvent(MouseEvent.MOUSE_RELEASED,
-			ff.getLayoutY() , ff.getLayoutY(), 
-			ff.getLayoutX(), ff.getLayoutY(), 
+			btnAcc.getLayoutY() , btnAcc.getLayoutY(), 
+			btnAcc.getLayoutX(), btnAcc.getLayoutY(), 
 			MouseButton.PRIMARY, 1,
             true, true, true, true, true, 
             true, true, true, true, true, 
@@ -158,7 +160,6 @@ public class VideoPlayerController {
 		if(btnDec == null) {
 			return; 
 		}
-//		System.out.println("firing dec press");
 		btnDec.fireEvent(
 			new MouseEvent(MouseEvent.MOUSE_PRESSED,
 			btnDec.getLayoutY() , btnDec.getLayoutY(), 
@@ -175,7 +176,6 @@ public class VideoPlayerController {
 		if(btnAcc == null) {
 			return;
 		}
-//		System.out.println("firing dec release");
 		btnAcc.fireEvent(
 			new MouseEvent(MouseEvent.MOUSE_RELEASED,
 			btnAcc.getLayoutY() , btnAcc.getLayoutY(), 
