@@ -9,22 +9,22 @@ public class FramesBufferController {
 	private static ArrayList<ImageView> buffer;
 	private static ArrayList<Boolean> canDisplayBuffer;//initial value are of Boolean IS NULL (NOT FALSE)
 	
-	public static int init(int fImagesSize, int bufferSize) {
-		System.out.println("initializing buffers...");
+	public static int initializeFramesBuffer(int fImagesSize, int bufferSize) {
 		//if the total images is less than buffer size, 
 		//then make bufferSize smaller
 		if(fImagesSize < bufferSize)
 			bufferSize = fImagesSize;
 		
-		buffer = new ArrayList<ImageView>(bufferSize);
+//		System.out.println("initializeFramesBuffer:: BufferSize: " + bufferSize );
 		
+		buffer = new ArrayList<ImageView>(bufferSize);
+		//==========================failed attempt:
 //		canDisplayBuffer = new ArrayList<Boolean>(bufferSize);
 //		System.out.println("canDisplayBuffer.size()" + canDisplayBuffer.size());
 		//initializes them with true
 //		Collections.fill(canDisplayBuffer, Boolean.TRUE);
 //		FramesBufferController.setCanDisplayBuffer(canDisplayBuffer);
 		
-
 		FramesBufferController.setBuffer(buffer);
 		return bufferSize;
 	}
@@ -56,6 +56,5 @@ public class FramesBufferController {
 //	public static void setCanDisplayBuffer(ArrayList<Boolean> canDisplayBuffer) {
 //		FramesBufferController.canDisplayBuffer = canDisplayBuffer;
 //	}
-	
 	
 }
