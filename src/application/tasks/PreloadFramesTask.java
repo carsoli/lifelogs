@@ -12,15 +12,19 @@ import javafx.scene.image.ImageView;
 
 @SuppressWarnings("rawtypes")
 public class PreloadFramesTask extends Task{
-	private int bufferSize = Constants.FRAMES_BUFFER_SIZE; 
+	private int bufferSize; 
 	
 	@Override
 	protected Object call() throws Exception {
 		ViewUtils.sortChosenImages();//this sorts the chosenImages and uses the output to setFImages()
 		ArrayList<File> chosenImages = ViewUtils.getChosenImages();
-		bufferSize = FramesBufferController.init(chosenImages.size(), bufferSize);
+		
+//		System.out.println("size of chosen images: "+ chosenImages.size());
+		
+		bufferSize = FramesBufferController.initializeFramesBuffer(chosenImages.size(), 
+				Constants.FRAMES_BUFFER_SIZE);
 		ImageView imgView = null;
-
+	
 		while(FramesGliderController.getLastLoadedFrame() < bufferSize) {
 			imgView = ViewUtils.createImageView(chosenImages.get(FramesGliderController.getLastLoadedFrame()),
 					0,ViewUtils.getMainScene().getHeight());
@@ -28,7 +32,7 @@ public class PreloadFramesTask extends Task{
 //			System.out.println("enqueuing: " + chosenImages.get(FramesGliderController.getLastLoadedFrame()).getName());
 			FramesGliderController.IncremenetLastLoadedFrame();
 		}
-		
+
 		return null;
 	}
 
