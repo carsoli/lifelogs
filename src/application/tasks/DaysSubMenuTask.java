@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import application.controller.MainController;
 import application.structs.Day;
+import application.structs.FramesBufferController;
 import application.structs.Participant;
-import application.utils.ImagesToVideoConverter;
-import application.view.VideoPlayer;
+import application.view.FramesGlider;
 import application.view.ViewUtils;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -50,30 +50,53 @@ public class DaysSubMenuTask extends Task{
 				//thus allowing to start video creation
 				createVideosSM.getItems().add(dItem);
 				dItem.setOnAction(e -> {
-					System.out.println("Count of Events:"+ d.getEventCount());
 					//until the curr vid is created, don't change the chosenP bc it's a global variable
-					System.out.println("selected day idx: " + dayIdx);
 					ViewUtils.getChooseParticipantSM().setDisable(true); 
 					ViewUtils.getCreateVideoSM().setDisable(true);
 					MainController.setChosenD(dayIdx); 
-					Task createVideoTask = new CreateVideoTask(dayIdx);
-					MainController.addTask(createVideoTask);
-					createVideoTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+					//============COMMENTED FOR NOW: DONT DELETE****
+//					Task createVideoTask = new CreateVideoTask(dayIdx);
+//					MainController.addTask(createVideoTask);
+//					createVideoTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+//						@Override
+//						public void handle(WorkerStateEvent event) {
+//			                Platform.runLater(new Runnable() {
+//		                        @Override
+//		                        public void run() {
+//			                    	ImagesToVideoConverter.EncodeVideoAndClose();
+//			                    	ViewUtils.getChooseParticipantSM().setDisable(false);
+//			                    	ViewUtils.getCreateVideoSM().setDisable(false);
+//			                    	VideoPlayer.postProcessVideo();
+//		                        }
+//			                });
+//						}
+//					});
+//					MainController.execute(createVideoTask);
+					//=================================
+					
+					Task preloadFrames = new PreloadFramesTask();
+					MainController.addTask(preloadFrames);
+					preloadFrames.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
 						@Override
 						public void handle(WorkerStateEvent event) {
-			                Platform.runLater(new Runnable() {
+			                Platform.runLater(new Runnable() {//Read Note in loadImagesTask.java
 		                        @Override
 		                        public void run() {
-			                    	ImagesToVideoConverter.EncodeVideoAndClose();
+		                        	//loaded the first 100 images; now can initialize glider
+		                        	//TODO: later make the autoPlay and replay Controlled by the UI
+		                        	FramesGlider.initializeFrameGlider(
+		                        			FramesBufferController.getBuffer(), true, 
+//		                        			true, 
+		                        			false);
 			                    	ViewUtils.getChooseParticipantSM().setDisable(false);
 			                    	ViewUtils.getCreateVideoSM().setDisable(false);
-			                    	VideoPlayer.postProcessVideo();
-//			                    	ViewUtils.setVideosTab(VideoPlayer.updateVideosTab());
 		                        }
 			                });
 						}
+
 					});
-					MainController.execute(createVideoTask);
+					MainController.execute(preloadFrames);
+					
 				});
 			}
 		}
