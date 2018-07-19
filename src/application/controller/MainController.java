@@ -19,6 +19,8 @@ public class MainController {
 	private static int chosenP = -1; //TODO: ATOMIC INT
 	private static int chosenD = -1; 
 	private static DataSource mDataSource = null; 
+	private static boolean rightKeyPressed = false, leftKeyPressed = false; 
+	
 	
 	@SuppressWarnings("rawtypes")
 	private static ArrayList<Task> tasksLog = new ArrayList<Task>();
@@ -69,6 +71,14 @@ public class MainController {
 	}
 
 	public static void execute(@SuppressWarnings("rawtypes") Task t) {
+//		//TO SAVE RAM: this overshadows setOnSucceeded implemented per task i guess
+		//TODO: find a way to fix it; maybe set a maximum allowed number of tasks and remove the non-running tasks in the list
+//		t.setOnSucceeded(new EventHandler<Event>() {
+//			@Override
+//			public void handle(Event event) {
+//				tasksLog.remove(t);
+//			}
+//		});
 		threadPool.execute(t);
 	}
 	
@@ -98,6 +108,7 @@ public class MainController {
 		return chosenP;
 	}
 
+	//TODO: update for framesGlider
 	public static EventHandler<KeyEvent> keyReleasedHandler = e -> {
 			System.out.println("key released");
 			switch (e.getCode()) {
@@ -117,35 +128,40 @@ public class MainController {
 				e.consume();
 				break;
 			case RIGHT:
+				rightKeyPressed = false;
 				VideoPlayerController.fireAcceleratorReleaseEvent();
 				fireNoOpMouseEvent();
 				e.consume();
 				break;
 			case LEFT: 
+				leftKeyPressed = false;
 				VideoPlayerController.fireDeceleratorReleaseEvent();
 				fireNoOpMouseEvent();
 				e.consume();
 				break;
-//			case VOLUME_UP:
-//				VideoPlayer.getBtnVolumeUp().fire();
-//			case VOLUME_DOWN:
-//				VideoPlayer.getBtnVolumeDown().fire();
 			default:
 				break;
 			}
 	};
-	
+
+	//TODO: update for framesGlider
 	public static EventHandler<KeyEvent> keyPressedHandler = e -> {
-		System.out.println("key pressed");
 			switch(e.getCode()) {
 				case RIGHT: 
-					VideoPlayerController.fireAcceleratorPressEvent();
-					fireNoOpMouseEvent();
-					e.consume();
+					if(!rightKeyPressed) {
+						System.out.println("key pressed");
+						rightKeyPressed = true;
+						VideoPlayerController.fireAcceleratorPressEvent();
+						fireNoOpMouseEvent();
+					}
+					e.consume(); //MUST CONSUME OUTSIDE;; because otherwise the tabs will switch
 					break;
 				case LEFT:
-					VideoPlayerController.fireDeceleratorPressEvent();
-					fireNoOpMouseEvent();
+					if(!leftKeyPressed) {
+						leftKeyPressed = true;
+						VideoPlayerController.fireDeceleratorPressEvent();
+						fireNoOpMouseEvent();
+					}
 					e.consume();
 					break;
 				default: 
@@ -196,5 +212,7 @@ public class MainController {
 		MainController.mDataSource = mDS;
 	}
 
+
+	
 	
 }

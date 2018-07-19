@@ -31,6 +31,7 @@ public class CustomScrollPane extends ScrollPane {
 		tpContent.setPadding(new Insets(5, 5, 5, 5));
 		tpContent.setHgap(5);
 		tpContent.setVgap(5);
+		tpContent.setStyle(Constants.BG_BLACK);
 		this.setContent(tpContent);
 	}
 	

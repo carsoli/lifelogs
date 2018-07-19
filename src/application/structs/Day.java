@@ -78,6 +78,10 @@ public class Day {
 		return this.fImages;
 	}
 
+	public void setFImages(ArrayList<File> list){
+		this.fImages = list;
+	}
+	
 	public void addFImage(File img) {
 		fImages.add(img);
 	}
