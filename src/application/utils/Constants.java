@@ -56,7 +56,7 @@ public final class Constants {
     public static final String FILE_NAME = "output.mp4";
 	public static final String FORMAT_NAME = null; //if unspecified, default's used
 	public static final String CODEC_NAME = null; //if unspecified, default's used
-	public static final int FPS = 2; //frames per second//10
+	public static final int FPS = 10;  
 	public static final int FRAMES_BUFFER_SIZE = 50;
 	
 	public static final int DEFAULT_IMAGE_WIDTH = 2592;
