@@ -2,6 +2,7 @@ package application.tasks;
 
 import java.util.ArrayList;
 
+import application.controller.FramesGliderController;
 import application.controller.MainController;
 import application.structs.Day;
 import application.structs.FramesBufferController;
@@ -73,7 +74,12 @@ public class DaysSubMenuTask extends Task{
 //					});
 //					MainController.execute(createVideoTask);
 					//=================================
-					
+					//whenever we choose a different day, we need to reset LLI
+					//this way the preloadFramesTask can load things correctly
+					FramesGliderController.setLastLoadedFrame(0);
+					//and curr buff ptr because we decide to load while one video is still playing,
+					//curr buff ptr would be out of bound
+					FramesGlider.setCurrBuffPtr(0);
 					Task preloadFrames = new PreloadFramesTask();
 					MainController.addTask(preloadFrames);
 					preloadFrames.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -82,11 +88,9 @@ public class DaysSubMenuTask extends Task{
 			                Platform.runLater(new Runnable() {//Read Note in loadImagesTask.java
 		                        @Override
 		                        public void run() {
-		                        	//loaded the first 100 images; now can initialize glider
-		                        	//TODO: later make the autoPlay and replay Controlled by the UI
+		                        	//TODO: later make the autoPlay Controlled by the UI
 		                        	FramesGlider.initializeFrameGlider(
 		                        			FramesBufferController.getBuffer(), true, 
-//		                        			true, 
 		                        			false);
 			                    	ViewUtils.getChooseParticipantSM().setDisable(false);
 			                    	ViewUtils.getCreateVideoSM().setDisable(false);
