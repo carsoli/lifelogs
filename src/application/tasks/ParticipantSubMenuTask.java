@@ -70,10 +70,9 @@ public class ParticipantSubMenuTask extends Task{
 						MainController.execute(loadImagesTask);
 						//the execute call creates a new worker thread using the threadFactory method
 						//specified in the ExecutorService "threadPool"
-						
-						ViewUtils.getCreateVideoSM().setDisable(false);
 						int participantIdx = pArrayList.indexOf(p);
 						MainController.setChosenP(participantIdx);
+						ViewUtils.getCreateVideoSM().setDisable(false);
 						Task DSMTask = new DaysSubMenuTask(ViewUtils.getCreateVideoSM(), pArrayList, dArrayList);
 						MainController.addTask(DSMTask);
 						MainController.execute(DSMTask);

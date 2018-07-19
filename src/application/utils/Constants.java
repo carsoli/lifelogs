@@ -4,13 +4,22 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import javafx.util.Duration;
+
 /**
  * @author Carol Soliman
  * @since June, 2018
  * */
 
 public final class Constants {
-	public static final int MAX_THREADS = 50;
+	/*
+	 * Active threads consume system resources, especially memory. When there are more runnable threads 
+	 * than available processors, threads sit idle. Having many idle threads can tie up a lot of memory, 
+	 * putting pressure on the garbage collector, and having many threads competing for the CPUs can 
+	 * impose other performance costs as well. If you have enough threads to keep all the CPUs busy, 
+	 * creating more threads won't help and may even hurt.
+	 * */
+	public static final int MAX_THREADS = Runtime.getRuntime().availableProcessors();
 	public static final String MAIN_STAGE_TITLE = "LIFELOGS";
 	public static final String MAIN_MENU_TEXT = "Menu";
 	public static final String HELP_MENU_TEXT = "Help";
@@ -23,6 +32,7 @@ public final class Constants {
 	public static final String DT_FORMAT = "yyyyMMddHHmmss";
 	public static final String TAB0_TITLE = "Images";
 	public static final String TAB1_TITLE = "Videos";
+	public static final String TAB2_TITLE = "Frames Glider";
 
 	public static final double  IMAGE_SIZE = 150.0;
 
@@ -40,19 +50,24 @@ public final class Constants {
     public static final String STOP_IMG = "stop.png";
     public static final String VOLUMEUP_IMG = "volumeup.png";
     public static final String VOLUMEDOWN_IMG = "volumedown.png";
+    public static final String BLACK_SCREEN = "blackScreen.png";
+    
     /*covnertor constants*/
     public static final String FILE_NAME = "output.mp4";
-	public static final String FORMAT_NAME = null; //if unspecified defaults
-	public static final String CODEC_NAME = null; //if unspecified defaults
-	public static final int FPS = 10; //frames per second
-	public static final int IMAGE_RESIZE_FACTOR = 2;
+	public static final String FORMAT_NAME = null; //if unspecified, default's used
+	public static final String CODEC_NAME = null; //if unspecified, default's used
+	public static final int FPS = 2; //frames per second//10
+	public static final int FRAMES_BUFFER_SIZE = 50;
+	
 	public static final int DEFAULT_IMAGE_WIDTH = 2592;
 	public static final int DEFAULT_IMAGE_HEIGHT = 1944;
 	
 	public static final String VIDEO_STATIC_URL = "C:\\Users\\Carol\\eclipse-workspace\\lifelogs-videos\\PLarge0scaledDown.mp4";
-//	public static final String VIDEO_STATIC_URL = 
-//			"C:\\Users\\Carol\\Desktop\\videos\\testing_samples\\scaledDown.mp4";
 	public static final Path FFMPEG_BIN = Paths.get("C:\\Users\\Carol\\FFmpeg\\bin");
 	public static final String FFMPEG_EXE = "C:\\Users\\Carol\\FFmpeg\\bin\\ffmpeg.exe";
 	
+	public static final Duration GLIDER_INIT_RATE = Duration.millis((1/((double)Constants.FPS))*1000);
+	public static final Duration GLIDER_DEC_STEP = Duration.millis(((1/((double)Constants.FPS))*1000)/24);
+	public static final Duration GLIDER_ACC_STEP = Duration.millis(((1/((double)Constants.FPS))*1000)/24);
+	public static final Duration GLIDER_SLOWEST_RATE = Duration.millis((1/((double)Constants.FPS))*1000*3) ; //FPS=FPS*3
 }
