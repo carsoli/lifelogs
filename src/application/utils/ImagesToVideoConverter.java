@@ -81,8 +81,6 @@ public class ImagesToVideoConverter {
 	  */
 	    final MuxerFormat videoMuxerFormat = videoMuxer.getFormat();
 	
-//	    System.out.println("Muxer format: " + videoMuxerFormat);
-//	    System.out.println("Muxer format name: "+ videoMuxerFormat.getLongName());      
 	    final Codec videoCodec; 
 	    
 	    if (codecname != null) {
@@ -90,17 +88,13 @@ public class ImagesToVideoConverter {
 	    } else {
 	      ID videoCodecID = videoMuxerFormat.getDefaultVideoCodecId();
 	     
-//	      System.out.println("Video CODEC ID:" + videoCodecID);
 	      videoCodec = Codec.findEncodingCodec(videoCodecID);
-//	      System.out.println("video codec info: "+ videoCodec.toString());
-//	      System.out.println("===================");
 	      
 	    }
 	    /**
 	     * Now that we know what codec, we need to create an encoder
 	     */
 	    videoEncoder = Encoder.make(videoCodec);
-//	    System.out.println("Video ENCODER: "+ videoEncoder.toString());
 
 	    /**
 	     * Video encoders need to know at a minimum:
@@ -119,8 +113,6 @@ public class ImagesToVideoConverter {
 	    pixelformat = PixelFormat.Type.PIX_FMT_YUV420P; 
 	    videoEncoder.setPixelFormat(pixelformat);
 	    videoEncoder.setTimeBase(framerate);
-//	    System.out.println("VIDEO ENCODER AFTER INITIALIZING: "+ videoEncoder.toString());
-//    	System.out.println("===================");
     	
 	    /** An annoyance of some formats is that they need global (rather than per-stream) headers,
 	     * and in that case you have to tell the encoder. And since Encoders are decoupled from
@@ -161,16 +153,13 @@ public class ImagesToVideoConverter {
 	  */
 	    if(videoEncoder.getWidth() > 0 && videoEncoder.getHeight() > 0
 	    		&& pixelformat != PixelFormat.Type.PIX_FMT_NONE) {
-	    	
-//	    	System.out.println("MEDIA PIC IN THE MAKING");
-//	    	System.out.println("======================");
+
 	    	picture = MediaPicture.make(
 	    			videoEncoder.getWidth(),
 	    			videoEncoder.getHeight(),
 	    			pixelformat);
 	    	picture.setTimeBase(framerate);
-//	    	System.out.println("PICTURE: " + picture.toString());
-//	    	System.out.println("======================");
+
 	    }
 	    /* We're going to encode and then write out any resulting packets. */
 	    videoPacket = MediaPacket.make();
