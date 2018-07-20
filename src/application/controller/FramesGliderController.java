@@ -106,23 +106,6 @@ public class FramesGliderController {
 		}
 		
 	};
-
-//	public static void fireAcceleratorPressEvent(){
-//		Button btnAcc = FramesGlider.getBtnAccelerator();
-//		if(btnAcc == null) {
-//			return; 
-//		}
-//		btnAcc.fireEvent(
-//			new MouseEvent(MouseEvent.MOUSE_PRESSED,
-//			btnAcc.getLayoutY() , btnAcc.getLayoutY(), 
-//			btnAcc.getLayoutX(), btnAcc.getLayoutY(), 
-//			MouseButton.PRIMARY, 1,
-//            true, true, true, true, true, 
-//            true, true, true, true, true, 
-//            null
-//        ));
-//	}
-	
 	
 	public static void fireAcceleratorReleaseEvent(){
 		Button btnAcc = FramesGlider.getBtnAccelerator();
@@ -141,22 +124,6 @@ public class FramesGliderController {
         ));
 	}
 	
-//	public static void fireDeceleratorPressEvent(){
-//		Button btnDec = FramesGlider.getBtnDecelerator();
-//		if(btnDec == null) {
-//			return; 
-//		}
-//		btnDec.fireEvent(
-//			new MouseEvent(MouseEvent.MOUSE_PRESSED,
-//			btnDec.getLayoutY() , btnDec.getLayoutY(), 
-//			btnDec.getLayoutX(), btnDec.getLayoutY(), 
-//			MouseButton.PRIMARY, 1,
-//            true, true, true, true, true, 
-//            true, true, true, true, true, 
-//            null
-//        ));
-//	}
-
 	public static void fireDeceleratorReleaseEvent(){
 		Button btnAcc = FramesGlider.getBtnDecelerator();
 		if(btnAcc == null) {
