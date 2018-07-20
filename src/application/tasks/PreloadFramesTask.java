@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import application.controller.FramesGliderController;
-import application.structs.FramesBufferController;
+import application.controller.FramesBufferController;
 import application.utils.Constants;
 import application.view.ViewUtils;
 import javafx.concurrent.Task;
