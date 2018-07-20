@@ -106,7 +106,6 @@ public class MainController {
 		return chosenP;
 	}
 
-	//TODO: update for framesGlider
 	public static EventHandler<KeyEvent> keyReleasedHandler = e -> {
 			System.out.println("key released");
 			switch (e.getCode()) {
@@ -163,7 +162,6 @@ public class MainController {
 			}
 	};
 
-	//TODO: update for framesGlider
 	public static EventHandler<KeyEvent> keyPressedHandler = e -> {
 			switch(e.getCode()) {
 				case RIGHT: 
