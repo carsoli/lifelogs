@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import application.controller.FramesGliderController;
 import application.controller.MainController;
-import application.structs.FramesBufferController;
+import application.controller.FramesBufferController;
 import application.tasks.PreloadFramesTask;
 import application.utils.Constants;
 import javafx.animation.PauseTransition;
