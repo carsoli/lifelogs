@@ -77,6 +77,10 @@ public class VideoPlayerController {
 	};
 
 	//TODO: handle the case where the user pressed both RIGHT and LEFT Keys 
+	//we handle the right case first, and break; which won't make any effect for the left
+	//we can make the setRate call atomic
+	//we can remove the break, if we r sure both execute without any errors
+	//and in that case, the increase will be counteracted by the decrease, and nth needs to be done
 	//(two mouse presses are not possible but two key presses are)
 	//b/c both access setRate ; this is not feasible with the knob
 	public static EventHandler<Event> deceleratorPressHandler = new EventHandler<Event>() {
