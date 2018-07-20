@@ -115,5 +115,3 @@ public class DaysSubMenuTask extends Task{
 	}
 
 }
-
-
