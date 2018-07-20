@@ -39,7 +39,7 @@ public class Main extends Application {
 		 2) We clear the task queue log; where we keep track of any task created 
 		*/
 		for(@SuppressWarnings("rawtypes") Task task: MainController.getRunningTasks()) {
-			//TODO: 
+			//TODO: debug
 			if (task.isRunning())
 				task.cancel();
 //			MainController.cancelTask(MainController.getRunningTasks().indexOf(task));
