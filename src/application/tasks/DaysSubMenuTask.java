@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import application.controller.FramesGliderController;
 import application.controller.MainController;
 import application.structs.Day;
-import application.structs.FramesBufferController;
+import application.controller.FramesBufferController;
 import application.structs.Participant;
+import application.utils.ImagesToVideoConverter;
 import application.view.FramesGlider;
+import application.view.VideoPlayer;
 import application.view.ViewUtils;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -67,6 +69,7 @@ public class DaysSubMenuTask extends Task{
 //			                    	ImagesToVideoConverter.EncodeVideoAndClose();
 //			                    	ViewUtils.getChooseParticipantSM().setDisable(false);
 //			                    	ViewUtils.getCreateVideoSM().setDisable(false);
+//			                    	//TODO: processing fn moves to controller
 //			                    	VideoPlayer.postProcessVideo();
 //		                        }
 //			                });
@@ -80,6 +83,7 @@ public class DaysSubMenuTask extends Task{
 					//and curr buff ptr because we decide to load while one video is still playing,
 					//curr buff ptr would be out of bound
 					FramesGlider.setCurrBuffPtr(0);
+					long startTime = System.nanoTime();
 					Task preloadFrames = new PreloadFramesTask();
 					MainController.addTask(preloadFrames);
 					preloadFrames.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -94,6 +98,10 @@ public class DaysSubMenuTask extends Task{
 		                        			false);
 			                    	ViewUtils.getChooseParticipantSM().setDisable(false);
 			                    	ViewUtils.getCreateVideoSM().setDisable(false);
+			    					long endTime   = System.nanoTime();
+			    					long totalTime = endTime - startTime;
+			    					System.out.println("duration of preloading task execution: " + totalTime);
+
 		                        }
 			                });
 						}
