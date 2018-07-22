@@ -36,8 +36,12 @@ public final class Constants {
 
 	public static final double  IMAGE_SIZE = 150.0;
 
-    public static final String BG_WHITE = "-fx-background-color: white;";
+//    public static final String BG_WHITE = "-fx-background-color: white;";
     public static final String BG_BLACK = "-fx-background-color: black;";
+    public static final String BG_RED = "-fx-background-color: red;";
+    public static final String BG_GREEN = "-fx-background-color: green;";
+    public static final String BG_BLUE = "-fx-background-color: blue;";
+    
     public static final String BG_TRANSPARENT = "-fx-background-color: transparent;";
     
     public static final URL ASSETS_URL = Constants.class.getClassLoader().getResource("assets/");
@@ -53,19 +57,18 @@ public final class Constants {
     public static final String BLACK_SCREEN = "blackScreen.png";
     
     /*covnertor constants*/
-    public static final String FILE_NAME = "output.mp4";
 	public static final String FORMAT_NAME = null; //if unspecified, default's used
 	public static final String CODEC_NAME = null; //if unspecified, default's used
-	public static final int FPS = 10;  
-	public static final int FRAMES_BUFFER_SIZE = 50;
-	
 	public static final int DEFAULT_IMAGE_WIDTH = 2592;
 	public static final int DEFAULT_IMAGE_HEIGHT = 1944;
-	
 	public static final String VIDEO_STATIC_URL = "C:\\Users\\Carol\\eclipse-workspace\\lifelogs-videos\\PLarge0scaledDown.mp4";
+	/*Video: PostProcessing*/
 	public static final Path FFMPEG_BIN = Paths.get("C:\\Users\\Carol\\FFmpeg\\bin");
 	public static final String FFMPEG_EXE = "C:\\Users\\Carol\\FFmpeg\\bin\\ffmpeg.exe";
-	
+	public static final boolean VIDEO_AUTOPLAY = false;
+	/*Also, FramesGlider constants*/
+	public static final int FPS = 10;  
+	public static final int FRAMES_BUFFER_SIZE = 50;
 	public static final Duration GLIDER_INIT_RATE = Duration.millis((1/((double)Constants.FPS))*1000);
 	public static final Duration GLIDER_DEC_STEP = Duration.millis(((1/((double)Constants.FPS))*1000)/24);
 	public static final Duration GLIDER_ACC_STEP = Duration.millis(((1/((double)Constants.FPS))*1000)/24);
