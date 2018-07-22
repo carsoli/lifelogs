@@ -181,7 +181,6 @@ public class FramesGliderController {
 		if(cp == null) {
 			return;
 		}
-	   	System.out.println("NO OP");
 		cp.fireEvent(
 			new MouseEvent(MouseEvent.MOUSE_PRESSED,
 			cp.getLayoutY() , cp.getLayoutY(), 

@@ -2,7 +2,6 @@ package application.view;
 
 import java.util.ArrayList;
 
-
 import application.controller.FramesGliderController;
 import application.controller.MainController;
 import application.controller.FramesBufferController;
@@ -16,11 +15,12 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Slider;
 import javafx.scene.control.Tab;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -33,13 +33,17 @@ public class FramesGlider {
 	private static int stopPtr = -1; 
 	private static int totalFrames = 0;
 	private static PauseTransition pauseTimer = null;
-	private static TilePane controlPane = null;
 	private static boolean isInitiallyPlaying = false;
 	private static ImageButton btnDecelerator, btnStop, btnAccelerator;
 	private static ImageToggleButton btnPlayPause;
 	private static HBox frameHBox = null;
 	private static Tab framesGliderTab = null;
-	private static VBox framesGliderVBox = null, framesGliderInnerVB = null;
+	private static StackPane framesGliderSP = null; //instead of ScrollPane
+	private static VBox framesGliderVBox = null, controlVBox = null;
+//	private static VBox framesGliderInnerVB = null; 
+	private static TilePane controlPane = null;
+	private static Slider slider = null;
+	
 	private static int lastLoadedIdx = -1;
 	private static int bufferSize = 0;
 	
@@ -65,26 +69,43 @@ public class FramesGlider {
 		framesGliderTab = new TabPaneItem(2, Constants.TAB2_TITLE, false);
 		//main container in the tab
 		framesGliderVBox = (VBox)(framesGliderTab.getContent());
-        framesGliderVBox.setStyle(Constants.BG_BLACK);
-        framesGliderVBox.setAlignment(Pos.TOP_CENTER);
+		framesGliderVBox.setStyle(Constants.BG_BLUE);
+        
         //2nd main container
-        ScrollPane framesGliderSP = new ScrollPane();
-        framesGliderSP.setStyle(Constants.BG_BLACK);
-        framesGliderSP.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); 
-        framesGliderSP.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED); 
-        framesGliderSP.setFitToWidth(true);
-		//inner-most container: VBox
-    	framesGliderInnerVB = new VBox();
-    	framesGliderInnerVB.setPadding(new Insets(5, 0, 5, 0));
-    	framesGliderInnerVB.setStyle(Constants.BG_BLACK);
+        //-----------------
+//        ScrollPane framesGliderSP = new ScrollPane();
+//        framesGliderSP.setStyle(Constants.BG_BLACK);
+//        framesGliderSP.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); 
+//        framesGliderSP.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED); 
+//        framesGliderSP.setFitToWidth(true);
+  
+        //inner-most container: VBox
+//    	framesGliderInnerVB = new VBox();
+//    	framesGliderInnerVB.setPadding(new Insets(5, 0, 5, 0));
+//    	framesGliderInnerVB.setStyle(Constants.BG_BLACK);
+
+        //=============
+        //instead of the scroll pane that contains innerVB; we add stack pane, that directly
+        //has the frameHBox, and controlVBox
+        framesGliderSP = new StackPane();
+        framesGliderSP.setAlignment(Pos.BOTTOM_CENTER); //why isn't this applied
+        framesGliderSP.prefHeightProperty().bind(framesGliderVBox.heightProperty());
+//        framesGliderSP.prefWidthProperty().bind(framesGliderVBox.widthProperty());
+        
+        //--------------------
+        
         //framesContainer
 		frameHBox = new HBox();
         frameHBox.getChildren().add(new ImageView()); //initially add an empty image view
-        frameHBox.setAlignment(Pos.TOP_CENTER);
-		
-		framesGliderSP.setContent(framesGliderInnerVB);
-		framesGliderVBox.getChildren().add(framesGliderSP);
-		framesGliderInnerVB.getChildren().add(frameHBox);
+        frameHBox.setAlignment(Pos.CENTER); //applied on the child node of frameHBox
+        //------------------------
+//		framesGliderSP.setContent(framesGliderInnerVB);
+//      framesGliderVBox.getChildren().add(framesGliderSP);
+//      framesGliderInnerVB.getChildren().add(frameHBox);
+        //===================
+        framesGliderVBox.getChildren().add(framesGliderSP);
+        framesGliderSP.getChildren().add(frameHBox);//initially we only add the frameHBox
+        //---------------
 
         return framesGliderTab;
 	}
@@ -148,18 +169,39 @@ public class FramesGlider {
 			currBufferPtr = ((currBufferPtr+1)%bufferSize);
 			pauseTimer.playFromStart();
 		});
-
+		//ADDED---
+		controlVBox = new VBox();
+		controlVBox.setStyle(Constants.BG_RED);
+		controlVBox.setMaxHeight(Double.MIN_VALUE);
+		controlVBox.setAlignment(Pos.TOP_CENTER);
+//		controlVBox.setPadding(new Insets(0,0,0,0));
+		controlVBox.setSpacing(0);
+		//----
 		controlPane = initializeGliderControls();
-		controlPane.setAlignment(Pos.BASELINE_CENTER);
-		if(framesGliderInnerVB.getChildren().size() == 2) {
-			//re-initialize controlPane even if it exists b/c playPauseButton
-			//and its related flags change when the video is stopped/ends
-			//remove the old one then add it 
-			//the size is always be AT LEAST 1, b/c frameHBox
-			//is added in viewUtils' initializeScene()
-			framesGliderInnerVB.getChildren().remove(1);
-		} 
-		framesGliderInnerVB.getChildren().add(controlPane);
+		
+		//ADDED-----
+		slider = initializeSeekBar();
+		controlVBox.getChildren().addAll(slider, controlPane);
+		//-------------------------
+		
+		//---------------------------
+//		if(framesGliderInnerVB.getChildren().size() == 2) {
+//			//re-initialize controlPane even if it exists b/c playPauseButton
+//			//and its related flags change when the video is stopped/ends
+//			//remove the old one then add it 
+//			//the size is always be AT LEAST 1, b/c frameHBox
+//			//is added in viewUtils' initializeScene()
+//			framesGliderInnerVB.getChildren().remove(1);
+//		} 
+//		framesGliderInnerVB.getChildren().add(controlPane);
+		//========================= instead
+		if(framesGliderSP.getChildren().size() == 2) {
+			framesGliderSP.getChildren().remove(1); 
+		}
+//		framesGliderSP.getChildren().add(controlPane);
+		controlVBox.setPrefHeight(Double.MIN_VALUE);
+		framesGliderSP.getChildren().add(controlVBox);
+		//-----------------------------------
 		
 		if(isInitiallyPlaying && !isStopped)
 			pauseTimer.playFromStart(); //first call
@@ -169,12 +211,16 @@ public class FramesGlider {
 		frameRate = newPauseTime;
 	}
 	
+	public static Slider initializeSeekBar() {
+		Slider slider = new Slider(0, 100,50);
+		return slider;
+	}
 	
 	public static TilePane initializeGliderControls() {
 		TilePane controlPane = new TilePane();
 		controlPane.setOrientation(Orientation.HORIZONTAL);
 		controlPane.setAlignment(Pos.CENTER);
-		controlPane.setStyle(Constants.BG_TRANSPARENT);
+		controlPane.setStyle(Constants.BG_GREEN);//**
 		controlPane.setHgap(10);
 		controlPane.setMaxHeight(Double.MIN_VALUE); //(smallest height of nodes within)
 		//=========
@@ -186,18 +232,14 @@ public class FramesGlider {
 		btnPlayPause.addEventHandler(ActionEvent.ACTION, FramesGliderController.playPauseHandler);
 		//=========
 		btnAccelerator = new ImageButton(Constants.FF_IMG);
-//		btnAccelerator.setOnMousePressed(FramesGliderController.acceleratorPressHandler);
 		btnAccelerator.setOnMouseReleased(FramesGliderController.acceleratorReleaseHandler);
-//		btnAccelerator.setOnTouchPressed(FramesGliderController.acceleratorPressHandler);
 		btnAccelerator.setOnTouchReleased(FramesGliderController.acceleratorReleaseHandler);
 		//=========
 		btnStop = new ImageButton(Constants.STOP_IMG);
 		btnStop.addEventHandler(ActionEvent.ANY, FramesGliderController.stopHandler);
 		//=========
 		btnDecelerator = new ImageButton(Constants.FB_IMG);
-//		btnDecelerator.setOnMousePressed(FramesGliderController.deceleratorPressHandler);
 		btnDecelerator.setOnMouseReleased(FramesGliderController.deceleratorReleaseHandler);
-//		btnDecelerator.setOnTouchPressed(FramesGliderController.deceleratorPressHandler);
 		btnDecelerator.setOnTouchReleased(FramesGliderController.deceleratorReleaseHandler);
 
 		controlPane.setPadding(new Insets(10, 5, 10, 5));
