@@ -19,8 +19,8 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -33,6 +33,7 @@ import javafx.util.Duration;
 public class VideoPlayer {
 	private static MediaPlayer mp = null;
 	private static TilePane controlPane = null;
+	private static StackPane videoSP = null;
 	private static MediaView mv = null;
 	private static ImageButton btnDecelerator, 
 	btnStop, btnAccelerator;
@@ -53,7 +54,6 @@ public class VideoPlayer {
 	private static double acc = 0, dec = 0;
 
 	private static ImageToggleButton btnPlayPause;
-	private static TilePane videoTP = null; 
 	private static VBox videoVBox = null; 
 	private static Tab videosTab = null;
 	private static String inputFilePath = null;
@@ -64,18 +64,11 @@ public class VideoPlayer {
         videosTab = new TabPaneItem(1, Constants.TAB1_TITLE, false);
         //main container in the tab
         VBox videoTabVBox = (VBox)videosTab.getContent(); 
-        //2nd main container
-        ScrollPane videoSP = new CustomScrollPane(ViewUtils.getMainScene()); 
-		videoTabVBox.getChildren().add(videoSP);
-		//3rd container: useless
-        videoTP = (TilePane)videoSP.getContent(); 
-        videoTP.setPadding(new Insets(0, 0, 0, 0)); //override the styling in the class
-        //4th container
-		videoVBox = new VBox();
-        videoVBox.setStyle(Constants.BG_BLACK);
-        videoVBox.setAlignment(Pos.TOP_CENTER);
-		videoVBox.prefHeightProperty().bind(ViewUtils.getMainScene().heightProperty());
 
+        videoSP = new StackPane();
+        videoSP.setAlignment(Pos.BOTTOM_CENTER);
+        videoTabVBox.getChildren().add(videoSP);
+        videoSP.prefHeightProperty().bind(videoTabVBox.heightProperty());
 		return videosTab;
 	}
 
@@ -108,6 +101,7 @@ public class VideoPlayer {
 	}
 	
 	public static Tab updateVideosTab() {
+		System.out.println("UPDATING VIDEOS TAB");
 		String videoPath = "", videoURI = "";
 //		String videoFileName = Constants.VIDEO_STATIC_URL;
 
@@ -118,9 +112,11 @@ public class VideoPlayer {
         	Media video = new Media(videoURI);
         	System.out.println("checking video src:" + video.getSource());
         	mp = new MediaPlayer(video);
-        	mp.setAutoPlay(false);
+        	mp.setAutoPlay(Constants.VIDEO_AUTOPLAY);
         	mv = new MediaView(mp);
-            mv.fitHeightProperty().bind(ViewUtils.getMainScene().heightProperty());
+        	
+        	mv.fitHeightProperty().bind(videoSP.heightProperty());
+            
             mv.setPreserveRatio(true);
             mv.setSmooth(true);
     		/*
@@ -128,9 +124,27 @@ public class VideoPlayer {
             * */
             mp.setOnEndOfMedia(new Runnable() {
 				public void run() { 
-				   mp.seek(Duration.ZERO);
-				   mp.play(); 
-				   
+				    mp.seek(Duration.ZERO);
+				    mp.play(); 
+					//**
+//					mp.stop();
+//					if(initiallyPlaying && !btnPlayPause.isSelected()) {
+//					/*if initially playing & the button is NOT selected; 
+//						video was playing when stop was clicked ->
+//						need to toggle the ImageButton's image
+//					*/
+//						btnPlayPause.setSelected(true);
+//						btnPlayPause.setSelectedBG();
+//					}
+//					if(!initiallyPlaying && btnPlayPause.isSelected()) {
+//						btnPlayPause.setSelected(false);
+//						btnPlayPause.setUnselectedBG();
+//					}	
+//					
+//				   initiallyPlaying = false;
+//				   controlPane = initializeVideoControls(mp);
+//				   videoSP.getChildren().remove(1);//remove old one; add new one
+//				   videoSP.getChildren().addAll(controlPane);
 				}
 			}); 
             
@@ -153,13 +167,14 @@ public class VideoPlayer {
 					printMessage("Media View:", event.getMediaError());
 				}
             });
-
             //CONTROLS
         	controlPane = initializeVideoControls(mp);
-        	//TODO : FIX THIS SHITTTTT CLEAR DOESNT WORK
-        	videoTP.getChildren().clear();//to avoid duplicate children
-        	videoTP.getChildren().add(videoVBox);
-        	videoVBox.getChildren().addAll(mv, controlPane);
+
+        	if(videoSP.getChildren().size() == 2) {
+        		videoSP.getChildren().clear();
+        	}
+        	videoSP.getChildren().addAll(mv, controlPane);
+        	
         } catch(NullPointerException e1) {
         	System.out.println("Null Media Object");
         	e1.printStackTrace();
@@ -228,35 +243,47 @@ public class VideoPlayer {
 		controlPane.setHgap(10);
 		controlPane.setMaxHeight(Double.MIN_VALUE); //(smallest height of nodes within)
 		//=========
-		initiallyPlaying = mp.isAutoPlay(); //if autoplay is true then the video is initially playing
+		initiallyPlaying = mp.isAutoPlay(); //we set it in updateVideosTab()
+//		initiallyPlaying = isInitiallyPlaying(); //**** 
+		
 		if(initiallyPlaying) {//then the button should be pause if unselected, and play if selected
 			btnPlayPause = new ImageToggleButton(Constants.PAUSE_IMG, Constants.PLAY_IMG);
 		} else {//then the button should be play when unselected
 			btnPlayPause = new ImageToggleButton(Constants.PLAY_IMG, Constants.PAUSE_IMG);
 		}
-		btnPlayPause.addEventHandler(ActionEvent.ACTION, VideoPlayerController.playPauseHandler);
 		//=========
 		btnAccelerator = new ImageButton(Constants.FF_IMG);
+		//=========
+		btnStop = new ImageButton(Constants.STOP_IMG);
+		//=========
+		btnDecelerator = new ImageButton(Constants.FB_IMG);
+		
+		//****ORDER MATTERS
+		//FIRST CREATE ALL BUTTONS, then INITIALIZE VIDEOCONTROLLER
+		//THEN ADD ALL HANDLERS;
+		VideoPlayerController.initializeVideoController(); 
+		btnPlayPause.addEventHandler(ActionEvent.ACTION, VideoPlayerController.playPauseHandler);
+		
 		btnAccelerator.setOnMousePressed(VideoPlayerController.acceleratorPressHandler);
 		btnAccelerator.setOnMouseReleased(VideoPlayerController.acceleratorReleaseHandler);
 		btnAccelerator.setOnTouchPressed(VideoPlayerController.acceleratorPressHandler);
 		btnAccelerator.setOnTouchReleased(VideoPlayerController.acceleratorReleaseHandler);
 		/*	
-		 	this checks if a key is pressed while the Button is selected
-		 	we need the handler to be called anywhere in the video container
-		 	thus, we add it to the scene (installKeyHandlers())
+	 	this checks if a key is pressed while the Button is selected
+	 	we need the handler to be called anywhere in the video container
+	 	thus, we add it to the scene (installKeyHandlers())
 		 */
-//		btnAccelerator.setOnKeyPressed(MainController.keyPressedHandler);
-		//=========
-		btnStop = new ImageButton(Constants.STOP_IMG);
+		//	btnAccelerator.setOnKeyPressed(MainController.keyPressedHandler);
 		btnStop.addEventHandler(ActionEvent.ANY, VideoPlayerController.stopHandler);
-		//=========
-		btnDecelerator = new ImageButton(Constants.FB_IMG);
+		
 		btnDecelerator.setOnMousePressed(VideoPlayerController.deceleratorPressHandler);
 		btnDecelerator.setOnMouseReleased(VideoPlayerController.deceleratorReleaseHandler);
 		btnDecelerator.setOnTouchPressed(VideoPlayerController.deceleratorPressHandler);
 		btnDecelerator.setOnTouchReleased(VideoPlayerController.deceleratorReleaseHandler);
 
+		
+		
+		
 		controlPane.setPadding(new Insets(10, 5, 10, 5));
 		controlPane.getChildren().addAll(
 				btnDecelerator, 
@@ -300,6 +327,7 @@ public class VideoPlayer {
 	public static boolean isInitiallyPlaying() {
 		return initiallyPlaying;
 	}
+	
 	
 	public static PauseTransition getAccHoldTimer() {
 		return accHoldTimer;

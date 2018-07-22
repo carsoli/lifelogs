@@ -69,7 +69,6 @@ public class DaysSubMenuTask extends Task{
 //			                    	ImagesToVideoConverter.EncodeVideoAndClose();
 //			                    	ViewUtils.getChooseParticipantSM().setDisable(false);
 //			                    	ViewUtils.getCreateVideoSM().setDisable(false);
-//			                    	//TODO: processing fn moves to controller
 //			                    	VideoPlayer.postProcessVideo();
 //		                        }
 //			                });

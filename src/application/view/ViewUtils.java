@@ -27,8 +27,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-//import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
@@ -110,10 +108,12 @@ public class ViewUtils {
 		VBox imagesTabVBox = (VBox)(imagesTab.getContent());
 				
 		ScrollPane imagesScrollPane = new CustomScrollPane(mScene);
-        imagesTilePaneContainer = (TilePane)imagesScrollPane.getContent();
-        imagesTilePaneContainer.minHeightProperty().bind(mScene.heightProperty());
+		imagesScrollPane.prefHeightProperty().bind(imagesTabVBox.heightProperty());
+
+		imagesTilePaneContainer = (TilePane)imagesScrollPane.getContent();
         imagesTilePaneContainer.setStyle(Constants.BG_BLACK);
-      //add the Scroll Pane to the main VBox in Images Tab content
+        imagesTilePaneContainer.prefHeightProperty().bind(imagesScrollPane.heightProperty());
+      
         imagesTabVBox.getChildren().add(imagesScrollPane);
         return imagesTab;
 	}
@@ -129,7 +129,7 @@ public class ViewUtils {
 		
 		mStage.setTitle(Constants.MAIN_STAGE_TITLE);
 	    /* full screen - support different screen sizes */
-        mStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth());
+        mStage.setWidth(Screen.getPrimary().getVisualBounds().getWidth() );
         mStage.setHeight(Screen.getPrimary().getVisualBounds().getHeight());
 		
 		MenuBar topBar = new MenuBar();
@@ -182,11 +182,7 @@ public class ViewUtils {
 		
 		//TabPane
 		mTabPane = new TabPane(); 
-        mTabPane.setStyle(Constants.BG_WHITE);
-        mTabPane.setPrefSize(
-        	Screen.getPrimary().getVisualBounds().getWidth(),
-        	Screen.getPrimary().getVisualBounds().getHeight()); // Default width and height
-        mTabPane.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+        mTabPane.prefHeightProperty().bind(root.heightProperty());
         
         //IMAGES TAB; ID: 0
         imagesTab = initializeImagesTab();

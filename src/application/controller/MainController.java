@@ -107,7 +107,6 @@ public class MainController {
 	}
 
 	public static EventHandler<KeyEvent> keyReleasedHandler = e -> {
-			System.out.println("key released");
 			switch (e.getCode()) {
 			//fire() triggers ActionEvent
 			case SPACE:
@@ -166,7 +165,6 @@ public class MainController {
 			switch(e.getCode()) {
 				case RIGHT: 
 					if(!rightKeyPressed) {
-						System.out.println("key pressed");
 						rightKeyPressed = true;
 						VideoPlayerController.fireAcceleratorPressEvent();
 						VideoPlayerController.fireNoOpMouseEvent();
@@ -190,7 +188,6 @@ public class MainController {
 		
 	public static void installKeyEventHandlers() {
         //KEY PRESS IS DETECTED ANYWHERE IN THE inner-most container of videoPlayer class DOESNT WORK 
-		//TODO TRY TO LIMIT IT TO VideoVBox (inner most container of videoplayer)
 //		VideoPlayer.getVideoVBox().setOnKeyReleased(MainController.keyReleasedHandler);
 		ViewUtils.getMainScene().addEventFilter(KeyEvent.KEY_RELEASED, MainController.keyReleasedHandler);
 		ViewUtils.getMainScene().addEventFilter(KeyEvent.KEY_PRESSED, MainController.keyPressedHandler);

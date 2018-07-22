@@ -19,14 +19,25 @@ import javafx.scene.media.MediaPlayer;
 
 
 public class VideoPlayerController {
-	private static ImageToggleButton btnPlayPause = VideoPlayer.getBtnPlayPause();
-	private static boolean initiallyPlaying = VideoPlayer.isInitiallyPlaying();
-	private static MediaPlayer mp = VideoPlayer.getMediaPlayer();
+	private static ImageToggleButton btnPlayPause;
+	private static boolean initiallyPlaying;
+	private static MediaPlayer mp;
 	//for logging purposes
 	private static long accStartTime = 0, decStartTime = 0, accEndTime = 0, decEndTime = 0;
 
+	public static void initializeVideoController() {
+		initiallyPlaying = VideoPlayer.isInitiallyPlaying();
+		btnPlayPause = VideoPlayer.getBtnPlayPause();
+		mp = VideoPlayer.getMediaPlayer();
+		accStartTime = 0; 
+		decStartTime = 0; 
+		accEndTime = 0;
+		decEndTime = 0; 
+	}
+	
 	public static EventHandler<ActionEvent> playPauseHandler = new EventHandler<ActionEvent>() {
 		public void handle(ActionEvent e) {
+			
 			if(btnPlayPause == null) {
 				return;
 			}
@@ -38,7 +49,8 @@ public class VideoPlayerController {
 			
 			if(initiallyPlaying == btnPlayPause.isSelected()){//XNOR
 				mp.pause();
-			} else if(initiallyPlaying && !btnPlayPause.isSelected() || !initiallyPlaying && btnPlayPause.isSelected()) {//XOR
+			} else if(initiallyPlaying && !btnPlayPause.isSelected() 
+					|| !initiallyPlaying && btnPlayPause.isSelected()) {//XOR
 				mp.play();
 			}
 //			e.consume(); //avoid bubbling
@@ -47,6 +59,7 @@ public class VideoPlayerController {
 
 	public static EventHandler<ActionEvent> stopHandler = new EventHandler<ActionEvent>() {
 		public void handle(ActionEvent e) {
+			
 			if(btnPlayPause == null) {
 				return;
 			}
@@ -198,7 +211,6 @@ public class VideoPlayerController {
 		if(cp == null) {
 			return;
 		}
-	   	System.out.println("NO OP");
 		cp.fireEvent(
 			new MouseEvent(MouseEvent.MOUSE_PRESSED,
 			cp.getLayoutY() , cp.getLayoutY(), 
