@@ -100,7 +100,6 @@ public class DaysSubMenuTask extends Task{
 			    					long endTime   = System.nanoTime();
 			    					long totalTime = endTime - startTime;
 			    					System.out.println("duration of preloading task execution: " + totalTime);
-
 		                        }
 			                });
 						}

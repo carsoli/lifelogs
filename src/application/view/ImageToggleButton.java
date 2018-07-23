@@ -14,12 +14,11 @@ import javafx.scene.image.ImageView;
 public class ImageToggleButton extends ToggleButton{
 	private Image unselectedImg = null;
 	private Image selectedImg = null; 
-	private ImageView imgView = null; 
+	private ImageView imageView = null; 
 	
 	public ImageToggleButton(String unselectedImgName, String selectedImageName) {
 		this.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 		this.setPadding(new Insets(5,10,5,10));
-//	  	final Image selected = new Image(selectedImageName);
 		
 		try {
 			final Image unselectedImg = new Image(Constants.ASSETS_URL.toString() + unselectedImgName);
@@ -27,8 +26,8 @@ public class ImageToggleButton extends ToggleButton{
 			final Image selectedImg = new Image(Constants.ASSETS_URL.toString() + selectedImageName);
 			this.selectedImg = selectedImg;
 			
-			this.imgView = new ImageView(unselectedImg);
-			this.setGraphic(imgView);
+			this.imageView = new ImageView(unselectedImg);
+			this.setGraphic(imageView);
 			
 		} catch(NullPointerException e1) {
 			System.out.println("Button Image URL is null");
@@ -41,16 +40,15 @@ public class ImageToggleButton extends ToggleButton{
 	}
 	
 	public void setSelectedBG() {
-		this.imgView = new ImageView(this.selectedImg);
-		this.setGraphic(imgView);
+		this.imageView = new ImageView(this.selectedImg);
+		this.setGraphic(imageView);
 		
 	}
 	
 	public void setUnselectedBG() {
 		//when selected = false
-		this.imgView = new ImageView(this.unselectedImg);
-		this.setGraphic(imgView);
+		this.imageView = new ImageView(this.unselectedImg);
+		this.setGraphic(imageView);
 		
 	}
-	
 }

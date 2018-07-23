@@ -11,7 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.TilePane;
+import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 
 public class FramesGliderController {
@@ -177,14 +177,14 @@ public class FramesGliderController {
 	}
 	
 	public static void fireNoOpMouseEvent(){
-		TilePane cp = FramesGlider.getControlPane();
-		if(cp == null) {
+		HBox buttonsTP = FramesGlider.getButtonsHBox();
+		if(buttonsTP == null) {
 			return;
 		}
-		cp.fireEvent(
+		buttonsTP.fireEvent(
 			new MouseEvent(MouseEvent.MOUSE_PRESSED,
-			cp.getLayoutY() , cp.getLayoutY(), 
-			cp.getLayoutX(), cp.getLayoutY(), 
+			buttonsTP.getLayoutY() , buttonsTP.getLayoutY(), 
+			buttonsTP.getLayoutX(), buttonsTP.getLayoutY(), 
 			MouseButton.PRIMARY, 1,
             true, true, true, true, true, 
             true, true, true, true, true, 

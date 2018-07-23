@@ -101,7 +101,6 @@ public class VideoPlayer {
 	}
 	
 	public static Tab updateVideosTab() {
-		System.out.println("UPDATING VIDEOS TAB");
 		String videoPath = "", videoURI = "";
 //		String videoFileName = Constants.VIDEO_STATIC_URL;
 
@@ -116,7 +115,7 @@ public class VideoPlayer {
         	mv = new MediaView(mp);
         	
         	mv.fitHeightProperty().bind(videoSP.heightProperty());
-            
+            System.out.println("mv height: " + mv.getFitHeight());
             mv.setPreserveRatio(true);
             mv.setSmooth(true);
     		/*

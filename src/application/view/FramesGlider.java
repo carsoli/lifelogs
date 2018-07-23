@@ -13,7 +13,6 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Tab;
@@ -28,7 +27,6 @@ import javafx.util.Duration;
 public class FramesGlider {
 	//TODO: must be atomic
 	private static Duration frameRate = FramesGliderController.getInitFrameRate();
-//	private static ArrayList<ImageView> frames = null;
 	private static int currBufferPtr = 0;
 	private static int stopPtr = -1; 
 	private static int totalFrames = 0;
@@ -38,74 +36,50 @@ public class FramesGlider {
 	private static ImageToggleButton btnPlayPause;
 	private static HBox frameHBox = null;
 	private static Tab framesGliderTab = null;
-	private static StackPane framesGliderSP = null; //instead of ScrollPane
+	private static StackPane framesGliderSP = null; 
 	private static VBox framesGliderVBox = null, controlVBox = null;
-//	private static VBox framesGliderInnerVB = null; 
-	private static TilePane controlPane = null;
+	private static HBox buttonsHBox = null;
+	private static TilePane sliderPane = null;
 	private static Slider slider = null;
 	
 	private static int lastLoadedIdx = -1;
 	private static int bufferSize = 0;
 	
 	
-	public static void disableControlPane() {
-		if(controlPane == null)
+	public static void disableButtonsHBox() {
+		if(buttonsHBox == null)
 			return;
-		controlPane.setDisable(true);
+		buttonsHBox.setDisable(true);
 	}
 	
-	public static void enableControlPane() {
-		if(controlPane == null) 
+	public static void enableButtonsHBox() {
+		if(buttonsHBox == null) 
 			return;
-		controlPane.setDisable(false);
+		buttonsHBox.setDisable(false);
 	}
 	
-	public static TilePane getControlPane() {
-		return FramesGlider.controlPane;
+	public static HBox getButtonsHBox() {
+		return FramesGlider.buttonsHBox;
 	}
 	
 	//called in viewUtils when initializing Scene
 	public static Tab initializeFrameGliderTab() {
 		framesGliderTab = new TabPaneItem(2, Constants.TAB2_TITLE, false);
-		//main container in the tab
-		framesGliderVBox = (VBox)(framesGliderTab.getContent());
-		framesGliderVBox.setStyle(Constants.BG_BLUE);
-        
-        //2nd main container
-        //-----------------
-//        ScrollPane framesGliderSP = new ScrollPane();
-//        framesGliderSP.setStyle(Constants.BG_BLACK);
-//        framesGliderSP.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); 
-//        framesGliderSP.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED); 
-//        framesGliderSP.setFitToWidth(true);
-  
-        //inner-most container: VBox
-//    	framesGliderInnerVB = new VBox();
-//    	framesGliderInnerVB.setPadding(new Insets(5, 0, 5, 0));
-//    	framesGliderInnerVB.setStyle(Constants.BG_BLACK);
 
-        //=============
-        //instead of the scroll pane that contains innerVB; we add stack pane, that directly
-        //has the frameHBox, and controlVBox
+		framesGliderVBox = (VBox)(framesGliderTab.getContent());
+		framesGliderVBox.setStyle(Constants.BG_BLACK);
+        
         framesGliderSP = new StackPane();
-        framesGliderSP.setAlignment(Pos.BOTTOM_CENTER); //why isn't this applied
+        framesGliderSP.setAlignment(Pos.BOTTOM_CENTER);
+        framesGliderVBox.getChildren().add(framesGliderSP);
         framesGliderSP.prefHeightProperty().bind(framesGliderVBox.heightProperty());
-//        framesGliderSP.prefWidthProperty().bind(framesGliderVBox.widthProperty());
-        
-        //--------------------
-        
-        //framesContainer
-		frameHBox = new HBox();
+
+        frameHBox = new HBox();
         frameHBox.getChildren().add(new ImageView()); //initially add an empty image view
         frameHBox.setAlignment(Pos.CENTER); //applied on the child node of frameHBox
-        //------------------------
-//		framesGliderSP.setContent(framesGliderInnerVB);
-//      framesGliderVBox.getChildren().add(framesGliderSP);
-//      framesGliderInnerVB.getChildren().add(frameHBox);
-        //===================
-        framesGliderVBox.getChildren().add(framesGliderSP);
+
         framesGliderSP.getChildren().add(frameHBox);//initially we only add the frameHBox
-        //---------------
+        frameHBox.maxHeightProperty().bind(framesGliderSP.heightProperty()); //this is done with every update of frame
 
         return framesGliderTab;
 	}
@@ -120,13 +94,14 @@ public class FramesGlider {
 		pauseTimer = new PauseTransition(frameRate);
 		bufferSize = FramesBufferController.getBuffer().size();
 
-		
 		pauseTimer.setOnFinished(e -> {
 			lastLoadedIdx = FramesGliderController.getLastLoadedFrame();//initially set by bufferTask
 			
 			if(currBufferPtr == stopPtr) {
-			//no need to continue displaying, we already displayed the last image in the previous call; return in the end
-				//if you need to replace stopPlayingAndReset() w/ code inside it, don't forget to leave the return statement
+			/*
+			 * no need to continue displaying, we already displayed the last image in the previous call; 
+			 * MUST Return after stopping and resetting
+			*/
 				stopPlayingAndReset();
 				return; 
 			}
@@ -169,39 +144,24 @@ public class FramesGlider {
 			currBufferPtr = ((currBufferPtr+1)%bufferSize);
 			pauseTimer.playFromStart();
 		});
-		//ADDED---
+
 		controlVBox = new VBox();
-		controlVBox.setStyle(Constants.BG_RED);
+		controlVBox.setStyle(Constants.BG_TRANSPARENT);
 		controlVBox.setMaxHeight(Double.MIN_VALUE);
+//		controlVBox.setPrefHeight(Double.MIN_VALUE); //we set the maxHeight anyways
+		controlVBox.setMaxWidth(Double.MIN_VALUE); //smallest node width in it will be the width of it
+		
 		controlVBox.setAlignment(Pos.TOP_CENTER);
-//		controlVBox.setPadding(new Insets(0,0,0,0));
+		controlVBox.setPadding(new Insets(0,0,0,0));
 		controlVBox.setSpacing(0);
-		//----
-		controlPane = initializeGliderControls();
+		buttonsHBox = initializeControlButtons();
+		sliderPane = initializeSlider();
+		controlVBox.getChildren().addAll(sliderPane, buttonsHBox);
 		
-		//ADDED-----
-		slider = initializeSeekBar();
-		controlVBox.getChildren().addAll(slider, controlPane);
-		//-------------------------
-		
-		//---------------------------
-//		if(framesGliderInnerVB.getChildren().size() == 2) {
-//			//re-initialize controlPane even if it exists b/c playPauseButton
-//			//and its related flags change when the video is stopped/ends
-//			//remove the old one then add it 
-//			//the size is always be AT LEAST 1, b/c frameHBox
-//			//is added in viewUtils' initializeScene()
-//			framesGliderInnerVB.getChildren().remove(1);
-//		} 
-//		framesGliderInnerVB.getChildren().add(controlPane);
-		//========================= instead
 		if(framesGliderSP.getChildren().size() == 2) {
 			framesGliderSP.getChildren().remove(1); 
 		}
-//		framesGliderSP.getChildren().add(controlPane);
-		controlVBox.setPrefHeight(Double.MIN_VALUE);
 		framesGliderSP.getChildren().add(controlVBox);
-		//-----------------------------------
 		
 		if(isInitiallyPlaying && !isStopped)
 			pauseTimer.playFromStart(); //first call
@@ -211,18 +171,37 @@ public class FramesGlider {
 		frameRate = newPauseTime;
 	}
 	
-	public static Slider initializeSeekBar() {
-		Slider slider = new Slider(0, 100,50);
-		return slider;
+	public static TilePane initializeSlider() {
+		sliderPane = new TilePane();
+		sliderPane.setStyle(Constants.BG_TRANSPARENT);
+		sliderPane.setAlignment(Pos.CENTER);
+		sliderPane.setPadding(new Insets(5, 0, 5, 0));
+		sliderPane.maxWidthProperty().bind(controlVBox.widthProperty());;
+		
+		slider = new Slider();
+		slider.prefWidthProperty().bind(buttonsHBox.widthProperty());
+		//** DO THE MAGIC HERE
+		slider.setMin(0);
+		slider.setMax(totalFrames);
+		slider.setValue(0); //initially; later update with event listeners
+//		slider.setShowTickLabels(showTickLabels);//numbers
+//		slider.setShowTickMarks(showTickMarks);//the vertical dashes
+//		slider.setMajorTickUnit(majorTickUnit);
+//		slider.setMinorTickCount(minorTickUnit);
+////		//setBlockIncrement(x) defines the distance that 
+////		//the thumb moves when a user clicks on the track 
+//		slider.setBlockIncrement(blockIncrement); //each click can represent {blockIncrement} frames to skip
+		
+		sliderPane.getChildren().add(slider);
+		return sliderPane;
 	}
 	
-	public static TilePane initializeGliderControls() {
-		TilePane controlPane = new TilePane();
-		controlPane.setOrientation(Orientation.HORIZONTAL);
-		controlPane.setAlignment(Pos.CENTER);
-		controlPane.setStyle(Constants.BG_GREEN);//**
-		controlPane.setHgap(10);
-		controlPane.setMaxHeight(Double.MIN_VALUE); //(smallest height of nodes within)
+	public static HBox initializeControlButtons() {
+		HBox buttonsPane = new HBox();
+		buttonsPane.setAlignment(Pos.CENTER);
+		buttonsPane.setStyle(Constants.BG_TRANSPARENT);
+		buttonsPane.setSpacing(10.0);
+		buttonsPane.setMaxHeight(Double.MIN_VALUE); //(smallest height of nodes within)
 		//=========
 		if(isInitiallyPlaying) {//then the button should be pause if unselected, and play if selected
 			btnPlayPause = new ImageToggleButton(Constants.PAUSE_IMG, Constants.PLAY_IMG);
@@ -241,13 +220,14 @@ public class FramesGlider {
 		btnDecelerator = new ImageButton(Constants.FB_IMG);
 		btnDecelerator.setOnMouseReleased(FramesGliderController.deceleratorReleaseHandler);
 		btnDecelerator.setOnTouchReleased(FramesGliderController.deceleratorReleaseHandler);
-
-		controlPane.setPadding(new Insets(10, 5, 10, 5));
-		controlPane.getChildren().addAll(
+		
+		
+		buttonsPane.setPadding(new Insets(10, 5, 10, 5));
+		buttonsPane.getChildren().addAll(
 				btnDecelerator, 
 				btnPlayPause, btnStop,
 				btnAccelerator); 
-		return controlPane;
+		return buttonsPane;
 		
 	}
 	
@@ -262,7 +242,7 @@ public class FramesGlider {
 		setStopPtr(-1);
 
 		if(totalFrames > bufferSize) {
-			disableControlPane();
+			disableButtonsHBox();
 			//YOU only want to reset the last loaded frame, if you plan to load from the beginning
 			FramesGliderController.setLastLoadedFrame(0); 
 			Task preloadFrames = new PreloadFramesTask();
@@ -275,34 +255,35 @@ public class FramesGlider {
 					ImageToggleButton playPauseB= new ImageToggleButton(Constants.PLAY_IMG, Constants.PAUSE_IMG);
 					playPauseB.setSelected(false);
 					playPauseB.addEventHandler(ActionEvent.ACTION, FramesGliderController.playPauseHandler);
-					int btnPPIdx = FramesGlider.controlPane.getChildren().indexOf(FramesGlider.btnPlayPause);
+					int btnPPIdx = FramesGlider.buttonsHBox.getChildren().indexOf(FramesGlider.btnPlayPause);
 					FramesGlider.btnPlayPause = playPauseB;
-					FramesGlider.controlPane.getChildren().set(
+					FramesGlider.buttonsHBox.getChildren().set(
 							btnPPIdx, playPauseB);
-					enableControlPane();	
+					enableButtonsHBox();	
 				}
 			});
 			MainController.execute(preloadFrames);
 		} else {
 			//no need to preload
-			disableControlPane();
+			disableButtonsHBox();
 			FramesGlider.isInitiallyPlaying = false; 
 			//===RE-INITIALIZE PLAYPAUSEBUTTON 
 			ImageToggleButton playPauseB= new ImageToggleButton(Constants.PLAY_IMG, Constants.PAUSE_IMG);
 			playPauseB.setSelected(false);
 			playPauseB.addEventHandler(ActionEvent.ACTION, FramesGliderController.playPauseHandler);
-			int btnPPIdx = FramesGlider.controlPane.getChildren().indexOf(FramesGlider.btnPlayPause);
+			int btnPPIdx = FramesGlider.buttonsHBox.getChildren().indexOf(FramesGlider.btnPlayPause);
 			FramesGlider.btnPlayPause = playPauseB;
-			FramesGlider.controlPane.getChildren().set(btnPPIdx, playPauseB);
-			enableControlPane();
+			FramesGlider.buttonsHBox.getChildren().set(btnPPIdx, playPauseB);
+			enableButtonsHBox();
 		}
 		
 		//add an intermediate black screen
 		final Image stopImage = FramesGliderController.getBlackScreenImage();
 		final ImageView stopImgView = new ImageView(stopImage);
+		stopImgView.fitHeightProperty().bind(framesGliderSP.heightProperty());
+		
 		frameHBox.getChildren().remove(0);
 		frameHBox.getChildren().add(stopImgView);
-
 		
 	}
 
@@ -337,11 +318,13 @@ public class FramesGlider {
 	
 	public static void updateFrameHBox() {
 		frameHBox.getChildren().remove(0);
-		frameHBox.getChildren().add(FramesBufferController.getBuffer().get(currBufferPtr));
+		ImageView iv = FramesBufferController.getBuffer().get(currBufferPtr);
+		iv.fitHeightProperty().bind(framesGliderSP.heightProperty());
+		frameHBox.getChildren().add(iv);
 	}
 	
-	public static HBox getFrameHBox() {
-		return FramesGlider.frameHBox;
+	public static StackPane getFramesGliderSP() {
+		return framesGliderSP;
 	}
 
 	public static void setCurrBuffPtr(int currBufferPtr) {

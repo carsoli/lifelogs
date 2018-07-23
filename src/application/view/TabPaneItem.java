@@ -4,7 +4,6 @@ import application.utils.Constants;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Tab;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 public class TabPaneItem extends Tab{
