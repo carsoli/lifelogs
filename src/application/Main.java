@@ -1,6 +1,7 @@
 package application;
 
 import java.util.ArrayList;
+
 import application.controller.MainController;
 import application.view.ViewUtils;
 import javafx.application.Application;

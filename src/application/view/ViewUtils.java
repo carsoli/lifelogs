@@ -74,7 +74,7 @@ public class ViewUtils {
 	
 	public static ImageView createImageView(final File imgFile, double fitWidth, double fitHeight) {
         ImageView imageView = null;
-        try {			                	
+        try {			               
         	final Image image = new Image(new FileInputStream(imgFile), 
         			fitWidth, fitHeight, true, false);
             imageView = new ImageView(image);
