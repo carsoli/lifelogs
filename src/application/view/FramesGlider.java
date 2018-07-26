@@ -7,6 +7,7 @@ import application.controller.MainController;
 import application.controller.FramesBufferController;
 import application.tasks.PreloadFramesTask;
 import application.utils.Constants;
+import javafx.animation.Animation.Status;
 import javafx.animation.PauseTransition;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
@@ -44,6 +45,8 @@ public class FramesGlider {
 	
 	private static int lastLoadedIdx = -1;
 	private static int bufferSize = 0;
+	private static final int initSliderValue = 0;
+	private static double currSliderValue = 0; 
 	
 	
 	public static void disableButtonsHBox() {
@@ -107,7 +110,7 @@ public class FramesGlider {
 			}
 					
 			updateFrameHBox();
-	
+			
 			if(stopPtr == -1) {//still has its initial value; we can still replace
 				if( lastLoadedIdx == totalFrames) {
 					stopPtr = currBufferPtr;
@@ -115,7 +118,10 @@ public class FramesGlider {
 					//================ delete only when the loadFrameTask 100% works
 					ImageView newImgView = ViewUtils.createImageView(
 							ViewUtils.getChosenImages().get(FramesGliderController.getLastLoadedFrame()),
+							//TODO: try to add the correct height from the beginning
+							//instead of updating it in the updateFrameHbox
 							0,ViewUtils.getMainScene().getHeight());
+//					System.out.println("replacing frame with: " + newImgView);
 					FramesBufferController.replaceFrame(currBufferPtr, newImgView);
 					//======================
 //					loadFrameTask lft = new loadFrameTask(
@@ -134,9 +140,6 @@ public class FramesGlider {
 //					MainController.addTask(lft);
 //					MainController.execute(lft);
 					//====================
-					
-//					System.out.println("replacing: " +
-//							ViewUtils.getChosenImages().get(FramesGliderController.getLastLoadedFrame()).getName());
 					FramesGliderController.IncremenetLastLoadedFrame();
 				}
 			}
@@ -159,7 +162,7 @@ public class FramesGlider {
 		controlVBox.getChildren().addAll(sliderPane, buttonsHBox);
 		
 		if(framesGliderSP.getChildren().size() == 2) {
-			framesGliderSP.getChildren().remove(1); 
+			framesGliderSP.getChildren().remove(1); //remove controlVBox(slider/buttons)
 		}
 		framesGliderSP.getChildren().add(controlVBox);
 		
@@ -180,20 +183,61 @@ public class FramesGlider {
 		
 		slider = new Slider();
 		slider.prefWidthProperty().bind(buttonsHBox.widthProperty());
-		//** DO THE MAGIC HERE
+
 		slider.setMin(0);
-		slider.setMax(totalFrames);
-		slider.setValue(0); //initially; later update with event listeners
-//		slider.setShowTickLabels(showTickLabels);//numbers
-//		slider.setShowTickMarks(showTickMarks);//the vertical dashes
-//		slider.setMajorTickUnit(majorTickUnit);
-//		slider.setMinorTickCount(minorTickUnit);
-////		//setBlockIncrement(x) defines the distance that 
-////		//the thumb moves when a user clicks on the track 
+		slider.setMax(totalFrames); 
+		slider.setValue(initSliderValue); //initially; later update with every lli increment
+		slider.setShowTickLabels(true);//numbers
+		slider.setShowTickMarks(true);//the vertical dashes
+		slider.setMinorTickCount(1);
+//		//setBlockIncrement(x) defines the distance that 
+//		//the thumb moves when a user clicks on the track 
 //		slider.setBlockIncrement(blockIncrement); //each click can represent {blockIncrement} frames to skip
+		initializeSliderListeners();
 		
 		sliderPane.getChildren().add(slider);
 		return sliderPane;
+	}
+	
+	public static void initializeSliderListeners() {
+		//ORDER MATTERS
+		slider.setOnMousePressed(FramesGliderController.seekPressHandler);
+		slider.setOnMouseReleased(FramesGliderController.seekReleaseHandler);
+		
+		slider.valueProperty().addListener((obs, oldValue, newValue) -> {
+			//called whenever the value changes (during mouse drag)
+			//called when the slider value is updated by setCurrSliderValue; ex:updateHFrame
+			
+//			System.out.println("old value:  " + oldValue + ", new value: " + newValue);
+			if(pauseTimer.getStatus() == Status.PAUSED) {
+				//if paused: 1)user pressed the mouse on slider/ 2)the video is actually Paused
+				//3) Both together
+				if(FramesGliderController.getLastDisplayedIndexBeforeDragging() == -1 ) {
+					int oldValueAsInt = oldValue.intValue();
+					if(oldValueAsInt == totalFrames) {
+						stopPlayingAndReset();
+						//this is done so if the video ends(displays last frame), and before calling
+						//stopPlayingAndReset, the user starts dragging the glider, the last index would be zero
+						//and any dragging will be as if he is seeking forward
+						FramesGliderController.setLastDisplayedIndexBeforeDragging(0);
+						return; 
+					} else {
+						FramesGliderController.setLastDisplayedIndexBeforeDragging(oldValueAsInt);
+					}
+				}
+				int newValueAsInt = newValue.intValue();
+				updateFrameHBox(newValueAsInt); //dummy display (no actual change of slider value)
+				//the slider will flicker it when user is dragging(bc it's setting it to an int
+				setCurrSliderValue(newValueAsInt); 
+				
+			}
+		});
+		
+//		slider.valueChangingProperty().addListener((obs, wasChanging, isChanging) ->{
+//		//is fired once on beginning of drag (!!!)
+//		});
+		
+		
 	}
 	
 	public static HBox initializeControlButtons() {
@@ -239,6 +283,7 @@ public class FramesGlider {
 		FramesGliderController.setMaxRateReached(false);
 		
 		setCurrBuffPtr(0); 
+		setCurrSliderValue(initSliderValue);//reset slider value
 		setStopPtr(-1);
 
 		if(totalFrames > bufferSize) {
@@ -251,14 +296,13 @@ public class FramesGlider {
 				@Override
 				public void handle(WorkerStateEvent event) {
 					FramesGlider.isInitiallyPlaying = false; 
-					//===RE-INITIALIZE PLAYPAUSEBUTTON 
+					//===RE-INITIALIZE PLAYPAUSEBUTTON ; TODO: move to a function
 					ImageToggleButton playPauseB= new ImageToggleButton(Constants.PLAY_IMG, Constants.PAUSE_IMG);
 					playPauseB.setSelected(false);
 					playPauseB.addEventHandler(ActionEvent.ACTION, FramesGliderController.playPauseHandler);
 					int btnPPIdx = FramesGlider.buttonsHBox.getChildren().indexOf(FramesGlider.btnPlayPause);
 					FramesGlider.btnPlayPause = playPauseB;
-					FramesGlider.buttonsHBox.getChildren().set(
-							btnPPIdx, playPauseB);
+					FramesGlider.buttonsHBox.getChildren().set(btnPPIdx, playPauseB);
 					enableButtonsHBox();	
 				}
 			});
@@ -278,13 +322,17 @@ public class FramesGlider {
 		}
 		
 		//add an intermediate black screen
+		displayBlackFrame();
+		
+				
+	}
+	
+	private static void displayBlackFrame() {
 		final Image stopImage = FramesGliderController.getBlackScreenImage();
 		final ImageView stopImgView = new ImageView(stopImage);
 		stopImgView.fitHeightProperty().bind(framesGliderSP.heightProperty());
-		
 		frameHBox.getChildren().remove(0);
 		frameHBox.getChildren().add(stopImgView);
-		
 	}
 
 	public static ImageButton getBtnDecelerator() {
@@ -306,22 +354,39 @@ public class FramesGlider {
 	public static boolean isInitiallyPlaying() {
 		return isInitiallyPlaying;
 	}
-	
-	public static PauseTransition getPauseTimer() {
-		return pauseTimer;
-	}
 
 	public static void setPauseTimer(PauseTransition pauseTimer) {
 		FramesGlider.pauseTimer = pauseTimer;
 	}
 
+	public static void updateFrameHBox(int frameIdx) {
+	//this signature's only used when we just display the frame the user is attempting to seek
+		//****
+		if(frameIdx == totalFrames) {
+			displayBlackFrame();
+			return;
+		}
+		frameHBox.getChildren().remove(0);
+		ImageView iv = ViewUtils.createImageView(
+				ViewUtils.getChosenImages().get(frameIdx),
+				0,framesGliderSP.getHeight());
+//		iv.fitHeightProperty().bind(framesGliderSP.heightProperty());
+		frameHBox.getChildren().add(iv);
+		
+	}
 	
 	public static void updateFrameHBox() {
 		frameHBox.getChildren().remove(0);
+//		System.out.println("UPDATE FRAME: Current BUFFPTR: " + currBufferPtr);
 		ImageView iv = FramesBufferController.getBuffer().get(currBufferPtr);
 		iv.fitHeightProperty().bind(framesGliderSP.heightProperty());
 		frameHBox.getChildren().add(iv);
+		//display frame 0; update sliderPtr to 1. display frame 1; update it to 2;
+		//current slider value is always pointing to the number of the frame that will
+		//be displayed in the next call of this fn
+		setCurrSliderValue(getCurrSliderValue()+1); 
 	}
+	
 	
 	public static StackPane getFramesGliderSP() {
 		return framesGliderSP;
@@ -339,6 +404,10 @@ public class FramesGlider {
 		FramesGlider.stopPtr = stopPtr;
 	}
 	
+	public static int getStopPtr() {
+		return FramesGlider.stopPtr;
+	}
+	
 	public static int getTotalFrames() {
 		return FramesGlider.totalFrames;
 	}
@@ -350,7 +419,6 @@ public class FramesGlider {
 	public static void stopPauseTimer() {
 		FramesGlider.pauseTimer.stop();
 	}
-	
 
 	public static void playPauseTimer() {
 		FramesGlider.pauseTimer.play();
@@ -370,6 +438,18 @@ public class FramesGlider {
 	
 	public static Duration getRate() {
 		return pauseTimer.getDuration();
+	}
+
+	public static double getCurrSliderValue() {
+		return currSliderValue;
+	}
+
+	public static void setCurrSliderValue(double currSliderValue) {
+		//in our logic the slider value always 
+		//represents the frame to be displayed next
+		FramesGlider.currSliderValue = currSliderValue;
+//		System.out.println("setting slider value to: " + currSliderValue);
+		slider.setValue(currSliderValue);
 	}
 
 

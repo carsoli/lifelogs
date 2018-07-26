@@ -19,17 +19,17 @@ public class PreloadFramesTask extends Task{
 		ViewUtils.sortChosenImages();//this sorts the chosenImages and uses the output to setFImages()
 		ArrayList<File> chosenImages = ViewUtils.getChosenImages();
 		
-//		System.out.println("size of chosen images: "+ chosenImages.size());
-		
 		bufferSize = FramesBufferController.initializeFramesBuffer(chosenImages.size(), 
 				Constants.FRAMES_BUFFER_SIZE);
 		ImageView imgView = null;
-	
-		while(FramesGliderController.getLastLoadedFrame() < bufferSize) {
+		int initLLI = FramesGliderController.getLastLoadedFrame(); //lli before the task begins
+		while(FramesGliderController.getLastLoadedFrame() < initLLI + bufferSize) {
 			imgView = ViewUtils.createImageView(chosenImages.get(FramesGliderController.getLastLoadedFrame()),
-					0,ViewUtils.getMainScene().getHeight());
+					//TODO: try to add the correct height from the beginning
+					//instead of updating it in the updateFrameHbox fn in FramesGlider
+					0,ViewUtils.getMainScene().getHeight()); 
 			FramesBufferController.enqueueFrame(imgView); //adds to end of arrayList(like queue)
-//			System.out.println("enqueuing: " + chosenImages.get(FramesGliderController.getLastLoadedFrame()).getName());
+			
 			FramesGliderController.IncremenetLastLoadedFrame();
 		}
 

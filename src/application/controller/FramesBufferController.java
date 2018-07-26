@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import javafx.scene.image.ImageView;
 
-//MOVE THIS TO CONTROLLERS PKG
 public class FramesBufferController {
 	private static ArrayList<ImageView> buffer;
 	private static ArrayList<Boolean> canDisplayBuffer;//initial value are of Boolean IS NULL (NOT FALSE)
@@ -15,16 +14,7 @@ public class FramesBufferController {
 		if(fImagesSize < bufferSize)
 			bufferSize = fImagesSize;
 		
-//		System.out.println("initializeFramesBuffer:: BufferSize: " + bufferSize );
-		
 		buffer = new ArrayList<ImageView>(bufferSize);
-		//==========================failed attempt:
-//		canDisplayBuffer = new ArrayList<Boolean>(bufferSize);
-//		System.out.println("canDisplayBuffer.size()" + canDisplayBuffer.size());
-		//initializes them with true
-//		Collections.fill(canDisplayBuffer, Boolean.TRUE);
-//		FramesBufferController.setCanDisplayBuffer(canDisplayBuffer);
-		
 		FramesBufferController.setBuffer(buffer);
 		return bufferSize;
 	}
@@ -49,12 +39,5 @@ public class FramesBufferController {
 		return buffer.set(idx, newFrame);
 	}
 
-//	public static ArrayList<Boolean> getCanDisplayBuffer() {
-//		return canDisplayBuffer;
-//	}
-//
-//	public static void setCanDisplayBuffer(ArrayList<Boolean> canDisplayBuffer) {
-//		FramesBufferController.canDisplayBuffer = canDisplayBuffer;
-//	}
 	
 }
