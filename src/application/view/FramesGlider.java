@@ -1,3 +1,7 @@
+/**
+ * @author Carol Soliman
+ * @since July, 2018
+ */
 package application.view;
 
 import java.util.ArrayList;
@@ -46,13 +50,17 @@ public class FramesGlider {
 	private static int lastLoadedIdx = -1;
 	private static int bufferSize = 0;
 	private static final int initSliderValue = 0;
-	private static double currSliderValue = 0; 
+//	private static double currSliderValue = 0; 
 	
 	
 	public static void disableButtonsHBox() {
 		if(buttonsHBox == null)
 			return;
 		buttonsHBox.setDisable(true);
+	}
+	
+	public static Slider getSlider() {
+		return slider;
 	}
 	
 	public static void enableButtonsHBox() {
@@ -98,7 +106,7 @@ public class FramesGlider {
 		bufferSize = FramesBufferController.getBuffer().size();
 
 		pauseTimer.setOnFinished(e -> {
-			lastLoadedIdx = FramesGliderController.getLastLoadedFrame();//initially set by bufferTask
+			lastLoadedIdx = FramesGliderController.getLastLoadedFrame();//initially set by preloadingTask
 			
 			if(currBufferPtr == stopPtr) {
 			/*
@@ -113,7 +121,10 @@ public class FramesGlider {
 			
 			if(stopPtr == -1) {//still has its initial value; we can still replace
 				if( lastLoadedIdx == totalFrames) {
-					stopPtr = currBufferPtr;
+//					stopPtr = currBufferPtr; //ABSOLUTELY STUPID TO BIND THIS WAY
+					//stopPtr never changes its value as long as data set is the same; 
+					//it can be calculated, always, and does not have to do with currBuffPtr
+					stopPtr = totalFrames%bufferSize;
 				} else {
 					//================ delete only when the loadFrameTask 100% works
 					ImageView newImgView = ViewUtils.createImageView(
@@ -190,9 +201,7 @@ public class FramesGlider {
 		slider.setShowTickLabels(true);//numbers
 		slider.setShowTickMarks(true);//the vertical dashes
 		slider.setMinorTickCount(1);
-//		//setBlockIncrement(x) defines the distance that 
-//		//the thumb moves when a user clicks on the track 
-//		slider.setBlockIncrement(blockIncrement); //each click can represent {blockIncrement} frames to skip
+		//defines the distance that the thumb moves when a user clicks on the track 
 		initializeSliderListeners();
 		
 		sliderPane.getChildren().add(slider);
@@ -205,16 +214,33 @@ public class FramesGlider {
 		slider.setOnMouseReleased(FramesGliderController.seekReleaseHandler);
 		
 		slider.valueProperty().addListener((obs, oldValue, newValue) -> {
-			//called whenever the value changes (during mouse drag)
-			//called when the slider value is updated by setCurrSliderValue; ex:updateHFrame
-			
-//			System.out.println("old value:  " + oldValue + ", new value: " + newValue);
+			//called whenever the value changes (on mouse press)
+			//called programmatically when the slider value is updated by setCurrSliderValue; ex:updateHFrame
+
+			System.out.println("OLD VALUE:  " + oldValue + ", NEW VALUE: " + newValue);
+//			System.out.println("slider.getValue(): " + slider.getValue()); //new value
+			int oldValueAsInt = oldValue.intValue();
+			int newValueAsInt = newValue.intValue();
+			//LEFT COMMENTED ON PURPOSE: FOR FUTURE REFERENCE::
+			//NEVER DO THIS; if user presses on the last frame while video's playing, baseCase 1 will call the reset
+//			if(oldValueAsInt == totalFrames) { //OR: if(newValueAsInt == totalFrames){
+//				System.out.println("reseting value before Pressing; oldValueAsInt == totalFrames");
+//				stopPlayingAndReset();
+//				FramesGliderController.setLastDisplayedIndexBeforePressing(0);
+//				return; 
+//			} else {
+//				FramesGliderController.setLastDisplayedIndexBeforePressing(oldValueAsInt);
+//			}
+//			
+			FramesGliderController.setLastDisplayedIndexBeforePressing(oldValueAsInt);
 			if(pauseTimer.getStatus() == Status.PAUSED) {
+				//gets here if the user DRAGS (presses and starts changing value without releasing)
 				//if paused: 1)user pressed the mouse on slider/ 2)the video is actually Paused
 				//3) Both together
 				if(FramesGliderController.getLastDisplayedIndexBeforeDragging() == -1 ) {
-					int oldValueAsInt = oldValue.intValue();
 					if(oldValueAsInt == totalFrames) {
+						System.out.println("reseting value before Draging; oldValueAsInt == totalFrames");
+
 						stopPlayingAndReset();
 						//this is done so if the video ends(displays last frame), and before calling
 						//stopPlayingAndReset, the user starts dragging the glider, the last index would be zero
@@ -225,19 +251,13 @@ public class FramesGlider {
 						FramesGliderController.setLastDisplayedIndexBeforeDragging(oldValueAsInt);
 					}
 				}
-				int newValueAsInt = newValue.intValue();
-				updateFrameHBox(newValueAsInt); //dummy display (no actual change of slider value)
-				//the slider will flicker it when user is dragging(bc it's setting it to an int
-				setCurrSliderValue(newValueAsInt); 
-				
-			}
+				updateFrameHBox(newValueAsInt); //dummy display (no actual change of buffer pointers)
+				//you don't have to set slider value; it's already set; and we can pick it up 
+				//from the fn now not the variable; this is actually what causes the flickering 
+//				setCurrSliderValue(newValueAsInt); 
+			} 
+
 		});
-		
-//		slider.valueChangingProperty().addListener((obs, wasChanging, isChanging) ->{
-//		//is fired once on beginning of drag (!!!)
-//		});
-		
-		
 	}
 	
 	public static HBox initializeControlButtons() {
@@ -281,6 +301,7 @@ public class FramesGlider {
 		pauseTimer.setDuration(FramesGliderController.getInitFrameRate());
 		FramesGliderController.setMinRateReached(false);
 		FramesGliderController.setMaxRateReached(false);
+		bufferSize = FramesBufferController.getBuffer().size();
 		
 		setCurrBuffPtr(0); 
 		setCurrSliderValue(initSliderValue);//reset slider value
@@ -308,8 +329,7 @@ public class FramesGlider {
 			});
 			MainController.execute(preloadFrames);
 		} else {
-			//no need to preload
-			disableButtonsHBox();
+			//no need to preload, but we still need to reset LLI
 			FramesGlider.isInitiallyPlaying = false; 
 			//===RE-INITIALIZE PLAYPAUSEBUTTON 
 			ImageToggleButton playPauseB= new ImageToggleButton(Constants.PLAY_IMG, Constants.PAUSE_IMG);
@@ -384,7 +404,7 @@ public class FramesGlider {
 		//display frame 0; update sliderPtr to 1. display frame 1; update it to 2;
 		//current slider value is always pointing to the number of the frame that will
 		//be displayed in the next call of this fn
-		setCurrSliderValue(getCurrSliderValue()+1); 
+		setCurrSliderValue(new Double(FramesGlider.getCurrSliderValue() ).intValue()+1); 
 	}
 	
 	
@@ -441,13 +461,14 @@ public class FramesGlider {
 	}
 
 	public static double getCurrSliderValue() {
-		return currSliderValue;
+		return slider.getValue();
+//		return currSliderValue;
 	}
 
 	public static void setCurrSliderValue(double currSliderValue) {
 		//in our logic the slider value always 
 		//represents the frame to be displayed next
-		FramesGlider.currSliderValue = currSliderValue;
+//		FramesGlider.currSliderValue = currSliderValue;
 //		System.out.println("setting slider value to: " + currSliderValue);
 		slider.setValue(currSliderValue);
 	}
