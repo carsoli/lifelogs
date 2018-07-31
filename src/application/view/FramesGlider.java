@@ -285,7 +285,6 @@ public class FramesGlider {
 		btnDecelerator.setOnMouseReleased(FramesGliderController.deceleratorReleaseHandler);
 		btnDecelerator.setOnTouchReleased(FramesGliderController.deceleratorReleaseHandler);
 		
-		
 		buttonsPane.setPadding(new Insets(10, 5, 10, 5));
 		buttonsPane.getChildren().addAll(
 				btnDecelerator, 
