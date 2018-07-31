@@ -41,8 +41,6 @@ public class FramesGliderController {
 	//actual index in the array of chosen Images that was displayed before slider was pressed
 	private static int lastDisplayedIndexBeforeDragging = -1; //index in actual images of user
 	private static int lastDisplayedIndexBeforePressing = -1;
-	private static int toBeDisplayedAfterPressing = -1;
-	
 	
 	public static EventHandler<ActionEvent> playPauseHandler = new EventHandler<ActionEvent>() {
 		public void handle(ActionEvent e) {
@@ -127,8 +125,21 @@ public class FramesGliderController {
 		}
 	};
 	
+	private static void toggleSelectionAndBG() {
+		//toggles the selection state and bg of button, if the video is paused, and the user tries to seek
+		//before playing the video again
+		//XNOR condition (if video is paused) 
+		if(FramesGlider.isInitiallyPlaying() && FramesGlider.getBtnPlayPause().isSelected()) {
+			FramesGlider.getBtnPlayPause().setSelected(false);
+			FramesGlider.getBtnPlayPause().setUnselectedBG();
+		} else if(!FramesGlider.isInitiallyPlaying() && !FramesGlider.getBtnPlayPause().isSelected()){
+			FramesGlider.getBtnPlayPause().setSelected(true);
+			FramesGlider.getBtnPlayPause().setSelectedBG();
+		}
+	}
+	
 	public static EventHandler<Event> seekReleaseHandler = new EventHandler<Event>() {
-		@SuppressWarnings({ "unchecked", "rawtypes" })
+		@SuppressWarnings({ "rawtypes" })
 		@Override
 		public void handle(Event event) {
 			System.out.println("release: lastbefore pressing: " + lastDisplayedIndexBeforePressing 
@@ -173,6 +184,7 @@ public class FramesGliderController {
 			if(lastDisplayedIndexBeforeDragging == currSliderV) {
 				System.out.println("base case: 2====================");
 				setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
+				toggleSelectionAndBG();
 				FramesGlider.playPauseTimer();
 				return;
 			}
@@ -193,6 +205,7 @@ public class FramesGliderController {
 				//after displaying the currSliderV
 				FramesGlider.setStopPtr(-1);
 				setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
+				toggleSelectionAndBG();
 				FramesGlider.playPauseTimer();
 				return;
 			}
@@ -216,6 +229,7 @@ public class FramesGliderController {
 					//so we reset it and because LLI == totalFrames, after the first iteration
 					//of anim loop, it will be set again properly
 					setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
+					toggleSelectionAndBG();
 					FramesGlider.playPauseTimer();
 					return;
 				}
@@ -292,6 +306,7 @@ public class FramesGliderController {
 					        System.out.println("========================");
 							
 							setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
+							toggleSelectionAndBG();
 							FramesGlider.playPauseTimer();
 						}
 						
@@ -355,6 +370,7 @@ public class FramesGliderController {
 							System.out.println("currbufferPtr: " + FramesGlider.getCurrBufferPtr());
 							System.out.println("========================");
 							setLastDisplayedIndexBeforeDragging(-1);
+							toggleSelectionAndBG();
 							FramesGlider.playPauseTimer();
 						}
 					});
@@ -416,6 +432,7 @@ public class FramesGliderController {
 							System.out.println("========================");
 	
 							setLastDisplayedIndexBeforeDragging(-1);
+							toggleSelectionAndBG();
 							FramesGlider.playPauseTimer();
 						}
 					});
@@ -454,6 +471,7 @@ public class FramesGliderController {
 								System.out.println("========================");
 		
 								setLastDisplayedIndexBeforeDragging(-1);
+								toggleSelectionAndBG();
 								FramesGlider.playPauseTimer();
 							}
 						});
@@ -463,7 +481,7 @@ public class FramesGliderController {
 						
 					} else {
 
-						System.out.println("case 1: seeking forward to the last {BS} frames");
+						System.out.println("case 1: seeking forward but NOT to the last {BS} frames");
 						int startLoadingIndex = currSliderV; 
 						int endLoadingIndex = (currSliderV + bufferSize -1);
 						Task loadingTask = new GenericLoadTask(startLoadingIndex, 
@@ -484,6 +502,7 @@ public class FramesGliderController {
 								System.out.println("========================");
 		
 								setLastDisplayedIndexBeforeDragging(-1);
+								toggleSelectionAndBG();
 								FramesGlider.playPauseTimer();
 							}
 						});
