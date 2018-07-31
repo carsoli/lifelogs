@@ -20,6 +20,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 
+@SuppressWarnings("unchecked")
 public class FramesGliderController {
 	private static ImageToggleButton btnPlayPause = null;
 	private static boolean initiallyPlaying = false;
@@ -198,14 +199,18 @@ public class FramesGliderController {
 			
 			//4) we already loaded the final frames, and were only displaying them before the slider action started
 			//AND we are seeking fw OR bw within them (RANGE::FROM: {total-buffer size} TO: {total} 
-			if(stopPtr != -1) {
+//			if(stopPtr != -1) {//don't use to check if we are to display the last {BS} frames
+				//because at exactly totalFrames - buffSize -1 , the frame would first be displayed then
+				//the stopPtr set so use either of the following checks:: as used in the rest of the code
+			if(getLastLoadedFrame() == totalFrames) { 
 				if(currSliderV >= (totalFrames - bufferSize) && currSliderV < totalFrames) {
 					System.out.println("base case: 4=================");
 					//seeking within the range of already loaded frames 
 					int nThFrame = currSliderV%bufferSize;
 					FramesGlider.setCurrBuffPtr(nThFrame);
-					//NO NEED TO SET STOPPTR OR LLI
+					//MUST SET STOPPTR; let it be set by the anim loop
 					FramesGlider.setStopPtr(-1); 
+					//no need to set LLI 
 					//in the case where the number of frames is an exact multiple, stopPtr 
 					//will have the same value as the currentBufferPtr (0)
 					//so we reset it and because LLI == totalFrames, after the first iteration
@@ -307,6 +312,9 @@ public class FramesGliderController {
 						//&& endLoadingIndex is in the range of the last {BS} frames, make it only until
 						//the index just before the {BS} frames, b/c the last {BS} frames would be 
 						//already loaded
+						//in this case it's not full preloading; it's loading partially then refilling from
+						//the old buffer of last {BS} frames b/c we are sure that they are already filled 
+						//with the desired frames
 						endLoadingIndex = (totalFrames - bufferSize -1);
 					}
 					
@@ -328,7 +336,6 @@ public class FramesGliderController {
 								currPtr = ((currPtr+1)%bufferSize);
 							}
 							
-							
 							FramesBufferController.setBuffer((ArrayList<ImageView>) newBuffer);
 							FramesGlider.setCurrBuffPtr((startLoadingIndex%bufferSize));
 							FramesGlider.setStopPtr(-1); 
@@ -347,7 +354,7 @@ public class FramesGliderController {
 							System.out.println("last loaded index: " + getLastLoadedFrame());
 							System.out.println("currbufferPtr: " + FramesGlider.getCurrBufferPtr());
 							System.out.println("========================");
-							setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
+							setLastDisplayedIndexBeforeDragging(-1);
 							FramesGlider.playPauseTimer();
 						}
 					});
@@ -355,171 +362,137 @@ public class FramesGliderController {
 					MainController.execute(loadingTask);
 					return;
 				}
-			} 
-//else { //EQUAL CASE IS HANDLED AS THE FIRST BASE CASE
-//			//2)Seek FW
-//				//now represents number of frames we need to ignore 
-//				int diff = currSliderV - lastDisplayedIndexBeforeDragging;
-//				if(diff < bufferSize) { //partially load
-//					//IT MAY BE THAT WHEN WE LOAD THE 2ND PART OF THE NEW BUFFER, WE REACH TOTAL FRAMES
-//					if((currSliderV+bufferSize) >= totalFrames) {
-//						System.out.println("FW: C1: Partial Loading till the last {BS} Frames=====");
-//						int startLoadingIdx = (currSliderV + bufferSize - diff); 
-//						int endLoadingIdx = (totalFrames -1);
-//						Task loadingTask = new GenericLoadTask(startLoadingIdx, endLoadingIdx, bufferSize);
-//						System.out.println( "startIdx: " + startLoadingIdx + " /endIdx: " + endLoadingIdx);
-//						
-//						loadingTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-//							@Override
-//							public void handle(WorkerStateEvent event) {
-//								ArrayList<ImageView> newBuffer = (ArrayList<ImageView>) loadingTask.getValue();
-//								ArrayList<ImageView> oldBuffer = FramesBufferController.getBuffer();
-//								int currPtr = ((endLoadingIdx+1)%bufferSize);
-//								while(currPtr!= (startLoadingIdx%bufferSize)) {
-//									//loop from after end to start index (on all the null values of the newBuffer)
-//									newBuffer.set(currPtr, oldBuffer.get(currPtr));
-//									currPtr = ((currPtr+1)%bufferSize);
-//								}
-//								
-//								FramesBufferController.setBuffer((ArrayList<ImageView>) newBuffer);
-//								FramesGlider.setCurrBuffPtr((currSliderV%bufferSize));
-//								if(currSliderV+bufferSize == totalFrames) {
-//									FramesGlider.setStopPtr(-1);
-//								} else {
-//									FramesGlider.setStopPtr((totalFrames%bufferSize)); 
-//								}
-//
-//								FramesGliderController.setLastLoadedFrame(totalFrames);
-//								setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
-//								
-//								System.out.println("last loaded index: " + getLastLoadedFrame());
-//								System.out.println("currbufferPtr: " + FramesGlider.getCurrBufferPtr());
-//								System.out.println("stopPtr: " + FramesGlider.getStopPtr());
-//								System.out.println("========================");
-//
-//								FramesGlider.playPauseTimer();
-//							}
-//						});
-//						MainController.addTask(loadingTask);
-//						MainController.execute(loadingTask);
-//						return;
-//
-//					} else {
-//						System.out.println("FW: C2: Partial Loading but not till the end=====");
-//
-//						int startLoadingIdx = (currSliderV + bufferSize - diff); 
-//						int endLoadingIdx = (currSliderV + bufferSize -1);
-//						Task loadingTask = new GenericLoadTask(startLoadingIdx, endLoadingIdx, bufferSize);
-//						System.out.println( "startIdx: " + startLoadingIdx + " /endIdx: " + endLoadingIdx);
-//						
-//						loadingTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-//							@Override
-//							public void handle(WorkerStateEvent event) {
-//								ArrayList<ImageView> newBuffer = (ArrayList<ImageView>) loadingTask.getValue();
-//								ArrayList<ImageView> oldBuffer = FramesBufferController.getBuffer();
-//								int currPtr = ((endLoadingIdx+1)%bufferSize);
-//								while(currPtr!= (startLoadingIdx%bufferSize)) {
-//									//loop from after end to start index (on all the null values of the newBuffer)
-//									newBuffer.set(currPtr, oldBuffer.get(currPtr));
-//									currPtr = ((currPtr+1)%bufferSize);
-//								}
-//								
-//								FramesBufferController.setBuffer((ArrayList<ImageView>) newBuffer);
-//								FramesGlider.setCurrBuffPtr((currSliderV%bufferSize));
-//								FramesGlider.setStopPtr(-1); 
-//								FramesGliderController.setLastLoadedFrame(endLoadingIdx+1);
-//								setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
-//
-//								System.out.println("last loaded index: " + getLastLoadedFrame());
-//								System.out.println("currbufferPtr: " + FramesGlider.getCurrBufferPtr());
-//								System.out.println("stopPtr: " + FramesGlider.getStopPtr());
-//								System.out.println("========================");
-//								
-//								FramesGlider.playPauseTimer();
-//							}
-//						});
-//						MainController.addTask(loadingTask);
-//						MainController.execute(loadingTask);
-//						return;
-//
-//					}
-//				} else {//we have to load everything
-//					if((currSliderV+bufferSize) >= totalFrames) {
-//						System.out.println("FW: C3: Full Loading till the last {BS} Frames=====");
-//						int startLoadingIdx = currSliderV; 
-//						int endLoadingIdx = totalFrames -1; 
-//						Task loadingTask = new GenericLoadTask(startLoadingIdx, endLoadingIdx, bufferSize);
-//						System.out.println( "startIdx: " + startLoadingIdx + " /endIdx: " + endLoadingIdx);
-//
-//						loadingTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-//							@Override
-//							public void handle(WorkerStateEvent event) {
-//								ArrayList<ImageView> newBuffer = (ArrayList<ImageView>) loadingTask.getValue();
-//								
-//								FramesBufferController.setBuffer((ArrayList<ImageView>) newBuffer);
-//								FramesGlider.setCurrBuffPtr((currSliderV%bufferSize));
-//								//there is a particular case when currBufferPtr would be exactly equal to StopPtr
-//								//in the case where we load the buffer fully and the currSliderValue is 
-//								//equal to total-buffersize --> in this case; we don't set
-//								//the stopPtr, it will be set anyways after displaying this frame
-//								//to the correct value in the pauseTransition Loop body in FramesGlider
-//								if(currSliderV+bufferSize == totalFrames) {
-//									FramesGlider.setStopPtr(-1);
-//								} else {
-//									FramesGlider.setStopPtr((totalFrames%bufferSize)); 
-//								}
-//								
-//								FramesGliderController.setLastLoadedFrame(totalFrames);
-//								setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
-//								
-//								System.out.println("last loaded index: " + getLastLoadedFrame());
-//								System.out.println("currbufferPtr: " + FramesGlider.getCurrBufferPtr());
-//								System.out.println("stopPtr: " + FramesGlider.getStopPtr());
-//								System.out.println("========================");
-//
-//								FramesGlider.playPauseTimer();
-//
-//							}
-//						});
-//						MainController.addTask(loadingTask);
-//						MainController.execute(loadingTask);
-//						return;
-//					} else {
-//						System.out.println("FW: C4: fully load buffer but not reach total frames=====");
-//						int startLoadingIdx = currSliderV; 
-//						int endLoadingIdx = (currSliderV + bufferSize -1); 
-//						Task loadingTask = new GenericLoadTask(startLoadingIdx, endLoadingIdx, bufferSize);
-//						System.out.println( "startIdx: " + startLoadingIdx + " /endIdx: " + endLoadingIdx);
-//
-//						loadingTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-//							@Override
-//							public void handle(WorkerStateEvent event) {
-//								ArrayList<ImageView> newBuffer = (ArrayList<ImageView>) loadingTask.getValue();
-//								
-//								FramesBufferController.setBuffer((ArrayList<ImageView>) newBuffer);
-//								FramesGlider.setCurrBuffPtr((currSliderV%bufferSize));
-//								FramesGlider.setStopPtr(-1); 
-//								FramesGliderController.setLastLoadedFrame(endLoadingIdx+1);
-//								setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
-//								
-//								System.out.println("last loaded index: " + getLastLoadedFrame());
-//								System.out.println("currbufferPtr: " + FramesGlider.getCurrBufferPtr());
-//								System.out.println("stopPtr: " + FramesGlider.getStopPtr());
-//								System.out.println("========================");
-//
-//								FramesGlider.playPauseTimer();
-//
-//							}
-//						});
-//						MainController.addTask(loadingTask);
-//						MainController.execute(loadingTask);
-//						return;
-//					}
-//				
-//				}
-//				
-//			}
-			
+			} else { //2)Seek FW (EQUAL CASE IS HANDLED AS THE SECOND BASE CASE)
+				//now represents number of frames we need to ignore 
+				int diff = currSliderV - lastDisplayedIndexBeforeDragging;
+				System.out.println("FW SEEK: DIFF:" + diff);				
+				if(diff < bufferSize) { //partial loading
+					System.out.println("FW-PARTIAL PRELOADING");
+					int startLoadingIdx = currSliderV + (bufferSize - diff); 
+					int endLoadingIdx = currSliderV + bufferSize -1;
+					if(endLoadingIdx >= totalFrames) {
+						//IT MAY BE THAT WHEN WE LOAD THE 2ND PART OF THE NEW BUFFER, WE REACH TOTAL FRAMES
+						endLoadingIdx = totalFrames -1; 
+						System.out.println("case 2: seeking forward in the last {BS} frames");
+					}
+					
+					Task loadingTask = new GenericLoadTask(startLoadingIdx, endLoadingIdx, bufferSize);
+					System.out.println( "startIdx: " + startLoadingIdx + " /endIdx: " + endLoadingIdx);
+					
+					int startReplacementIndex = ((endLoadingIdx+1)%bufferSize); 
+					int newLastLoadedFrame = (endLoadingIdx+1);
+					loadingTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+						@Override
+						public void handle(WorkerStateEvent event) {
+							ArrayList<ImageView> newBuffer = (ArrayList<ImageView>) loadingTask.getValue();
+							ArrayList<ImageView> oldBuffer = FramesBufferController.getBuffer();
+							int currPtr = startReplacementIndex;
+							while(currPtr!= (startLoadingIdx%bufferSize)) {
+							//loop from after end to start index (on all the null values of the newBuffer)
+								newBuffer.set(currPtr, oldBuffer.get(currPtr));
+								currPtr = ((currPtr+1)%bufferSize);
+								//in the case where endLoadingIdx = totalFrames-1, 
+								//we actually don't need to load the rest because the currentBufferPtr 
+								//will be pointing to the startPtr, and the loop will replace frames that we won't
+								//display but it's essential that we do replace them, because
+								//the user may seek to one of these frames, which will be null if we don't fill them
+								//ALSO, when we refill from the old buffer, since this is partial loading(diff<bufferSize)
+								//it will never happen that we refill, we refill wrong frames, because for the diff to be <
+								//bufferSize, then it means we are seeking FROM the range of the last {2*BS} Frames till
+								//the last {BS} frames, thus the FROM range is the range that FIRST preceds the range
+								//we are seeking to
+								//this however does not happen with full loading, because when we refill (we may be seeking
+								//from a range that does not DIRECTLY preceed the range we are currently filling into the new 
+								//buffer, which will require actual full loading not just refilling from the old buffer 
+								
+							}
+							FramesBufferController.setBuffer((ArrayList<ImageView>) newBuffer);
+							FramesGlider.setCurrBuffPtr((currSliderV%bufferSize));
+							FramesGlider.setStopPtr(-1);
+							FramesGliderController.setLastLoadedFrame(newLastLoadedFrame);
+							
+							System.out.println("last loaded index: " + getLastLoadedFrame());
+							System.out.println("currbufferPtr: " + FramesGlider.getCurrBufferPtr());
+							System.out.println("========================");
+	
+							setLastDisplayedIndexBeforeDragging(-1);
+							FramesGlider.playPauseTimer();
+						}
+					});
+					MainController.addTask(loadingTask);
+					MainController.execute(loadingTask);
+					return;
+				} else {//we have to load everything
+
+					System.out.println("FW-FULL PRELOADING");
+					if((currSliderV + bufferSize -1) >= totalFrames) {
+						//in this case, we need to load from the part even before the currentSliderV
+						//the last BS frames (bc direct replacement from the old buffer will use wrong frames that
+						//fill the same positions since the diff >= bufferSize
+						System.out.println("case 2: seeking forward to the last {BS} frames");
+						int startLoadingIndex = totalFrames - bufferSize;
+						int endLoadingIndex = totalFrames -1; 
+						Task loadingTask = new GenericLoadTask(startLoadingIndex, 
+								endLoadingIndex, bufferSize);
+						System.out.println( "startIdx: " + startLoadingIndex + " /endIdx: " + endLoadingIndex);
+						
+						loadingTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+							@Override
+							public void handle(WorkerStateEvent event) {
+								ArrayList<ImageView> newBuffer = (ArrayList<ImageView>) loadingTask.getValue();
+								//no need for the old buffer, we load {N} frames such that N == BS
+								FramesBufferController.setBuffer((ArrayList<ImageView>) newBuffer);
+								FramesGlider.setCurrBuffPtr((currSliderV%bufferSize)); //note that
+								//even when our start loadingIndx wasn't currSliderV, the currBuffPtr will be 
+								//currSliderV%bufferSize b/c as previously noted, the extra frames are useless for this 
+								//particular seek but keep the buffer in its correct format, and leaves no nulls :) 
+								FramesGlider.setStopPtr(-1);
+								FramesGliderController.setLastLoadedFrame(totalFrames);//endLoadingIndex+1
+								
+								System.out.println("last loaded index: " + getLastLoadedFrame());
+								System.out.println("currbufferPtr: " + FramesGlider.getCurrBufferPtr());
+								System.out.println("========================");
+		
+								setLastDisplayedIndexBeforeDragging(-1);
+								FramesGlider.playPauseTimer();
+							}
+						});
+						MainController.addTask(loadingTask);
+						MainController.execute(loadingTask);
+						return;
+						
+					} else {
+
+						System.out.println("case 1: seeking forward to the last {BS} frames");
+						int startLoadingIndex = currSliderV; 
+						int endLoadingIndex = (currSliderV + bufferSize -1);
+						Task loadingTask = new GenericLoadTask(startLoadingIndex, 
+								endLoadingIndex, bufferSize);
+						System.out.println( "startIdx: " + startLoadingIndex + " /endIdx: " + endLoadingIndex);
+						
+						loadingTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+							@Override
+							public void handle(WorkerStateEvent event) {
+								ArrayList<ImageView> newBuffer = (ArrayList<ImageView>) loadingTask.getValue();
+								FramesBufferController.setBuffer((ArrayList<ImageView>) newBuffer);
+								FramesGlider.setCurrBuffPtr((currSliderV%bufferSize));
+								FramesGlider.setStopPtr(-1);
+								FramesGliderController.setLastLoadedFrame(endLoadingIndex+1);
+								
+								System.out.println("last loaded index: " + getLastLoadedFrame());
+								System.out.println("currbufferPtr: " + FramesGlider.getCurrBufferPtr());
+								System.out.println("========================");
+		
+								setLastDisplayedIndexBeforeDragging(-1);
+								FramesGlider.playPauseTimer();
+							}
+						});
+						MainController.addTask(loadingTask);
+						MainController.execute(loadingTask);
+						return;
+					}
+				}
+			}
 		}
 	};
 	

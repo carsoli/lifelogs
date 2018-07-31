@@ -329,7 +329,7 @@ public class FramesGlider {
 			});
 			MainController.execute(preloadFrames);
 		} else {
-			//no need to preload, but we still need to reset LLI
+			//no need to pre load
 			FramesGlider.isInitiallyPlaying = false; 
 			//===RE-INITIALIZE PLAYPAUSEBUTTON 
 			ImageToggleButton playPauseB= new ImageToggleButton(Constants.PLAY_IMG, Constants.PAUSE_IMG);
