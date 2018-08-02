@@ -11,6 +11,7 @@ import application.controller.MainController;
 import application.controller.FramesBufferController;
 import application.tasks.PreloadFramesTask;
 import application.utils.Constants;
+import application.utils.SerialComm;
 import javafx.animation.Animation.Status;
 import javafx.animation.PauseTransition;
 import javafx.concurrent.Task;
@@ -50,7 +51,6 @@ public class FramesGlider {
 	private static int lastLoadedIdx = -1;
 	private static int bufferSize = 0;
 	private static final int initSliderValue = 0;
-//	private static double currSliderValue = 0; 
 	
 	
 	public static void disableButtonsHBox() {
@@ -96,10 +96,9 @@ public class FramesGlider {
 	}
 	
 	public static void initializeFrameGlider(ArrayList<ImageView> framesBuffer, boolean autoPlay, boolean isStopped) {
-		//total user images' files for the chosenDay
-		totalFrames = ViewUtils.getChosenImages().size(); 
-		//limited size buffer
-		FramesBufferController.setBuffer(framesBuffer);
+//		SerialComm.initializeSerialPort();
+		totalFrames = ViewUtils.getChosenImages().size(); //All images for the user's chosenDay
+		FramesBufferController.setBuffer(framesBuffer); //limited size buffer
 		
 		isInitiallyPlaying = autoPlay;
 		pauseTimer = new PauseTransition(frameRate);
@@ -111,7 +110,7 @@ public class FramesGlider {
 			if(currBufferPtr == stopPtr) {
 			/*
 			 * no need to continue displaying, we already displayed the last image in the previous call; 
-			 * MUST Return after stopping and resetting
+			 * MUST return after stopping and resetting
 			*/
 				stopPlayingAndReset();
 				return; 
@@ -121,12 +120,8 @@ public class FramesGlider {
 			
 			if(stopPtr == -1) {//still has its initial value; we can still replace
 				if( lastLoadedIdx == totalFrames) {
-//					stopPtr = currBufferPtr; //ABSOLUTELY STUPID TO BIND THIS WAY
-					//stopPtr never changes its value as long as data set is the same; 
-					//it can be calculated, always, and does not have to do with currBuffPtr
 					stopPtr = totalFrames%bufferSize;
 				} else {
-					//================ delete only when the loadFrameTask 100% works
 					ImageView newImgView = ViewUtils.createImageView(
 							ViewUtils.getChosenImages().get(FramesGliderController.getLastLoadedFrame()),
 							//TODO: try to add the correct height from the beginning
@@ -134,23 +129,6 @@ public class FramesGlider {
 							0,ViewUtils.getMainScene().getHeight());
 //					System.out.println("replacing frame with: " + newImgView);
 					FramesBufferController.replaceFrame(currBufferPtr, newImgView);
-					//======================
-//					loadFrameTask lft = new loadFrameTask(
-//							FramesGliderController.getLastLoadedFrame(), 
-//							currBufferPtr);
-//					FramesBufferController.setCanDisplay(currBufferPtr, false); 
-//					lft.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-//						@Override
-//						public void handle(WorkerStateEvent event) {
-//							//the task stores the indices of where to load from(LLI at the time of instantiation) 
-//							//and where to load to (currBufferPtr at time of instantiation)
-//							FramesBufferController.setCanDisplay(lft.getIndexToLoadTo(), true);
-//							FramesBufferController.replaceFrame(lft.getIndexToLoadTo(), lft.getValue());
-//						}
-//					});
-//					MainController.addTask(lft);
-//					MainController.execute(lft);
-					//====================
 					FramesGliderController.IncremenetLastLoadedFrame();
 				}
 			}
@@ -162,7 +140,6 @@ public class FramesGlider {
 		controlVBox = new VBox();
 		controlVBox.setStyle(Constants.BG_TRANSPARENT);
 		controlVBox.setMaxHeight(Double.MIN_VALUE);
-//		controlVBox.setPrefHeight(Double.MIN_VALUE); //we set the maxHeight anyways
 		controlVBox.setMaxWidth(Double.MIN_VALUE); //smallest node width in it will be the width of it
 		
 		controlVBox.setAlignment(Pos.TOP_CENTER);
@@ -201,7 +178,6 @@ public class FramesGlider {
 		slider.setShowTickLabels(true);//numbers
 		slider.setShowTickMarks(true);//the vertical dashes
 		slider.setMinorTickCount(1);
-		//defines the distance that the thumb moves when a user clicks on the track 
 		initializeSliderListeners();
 		
 		sliderPane.getChildren().add(slider);
@@ -217,21 +193,10 @@ public class FramesGlider {
 			//called whenever the value changes (on mouse press)
 			//called programmatically when the slider value is updated by setCurrSliderValue; ex:updateHFrame
 
-			System.out.println("OLD VALUE:  " + oldValue + ", NEW VALUE: " + newValue);
-//			System.out.println("slider.getValue(): " + slider.getValue()); //new value
+//			System.out.println("OLD VALUE:  " + oldValue + ", NEW VALUE: " + newValue);
 			int oldValueAsInt = oldValue.intValue();
 			int newValueAsInt = newValue.intValue();
-			//LEFT COMMENTED ON PURPOSE: FOR FUTURE REFERENCE::
-			//NEVER DO THIS; if user presses on the last frame while video's playing, baseCase 1 will call the reset
-//			if(oldValueAsInt == totalFrames) { //OR: if(newValueAsInt == totalFrames){
-//				System.out.println("reseting value before Pressing; oldValueAsInt == totalFrames");
-//				stopPlayingAndReset();
-//				FramesGliderController.setLastDisplayedIndexBeforePressing(0);
-//				return; 
-//			} else {
-//				FramesGliderController.setLastDisplayedIndexBeforePressing(oldValueAsInt);
-//			}
-//			
+
 			FramesGliderController.setLastDisplayedIndexBeforePressing(oldValueAsInt);
 			if(pauseTimer.getStatus() == Status.PAUSED) {
 				//gets here if the user DRAGS (presses and starts changing value without releasing)
@@ -239,12 +204,13 @@ public class FramesGlider {
 				//3) Both together
 				if(FramesGliderController.getLastDisplayedIndexBeforeDragging() == -1 ) {
 					if(oldValueAsInt == totalFrames) {
-						System.out.println("reseting value before Draging; oldValueAsInt == totalFrames");
+						System.out.println("reseting value before Dragging; oldValueAsInt == totalFrames");
 
 						stopPlayingAndReset();
 						//this is done so if the video ends(displays last frame), and before calling
 						//stopPlayingAndReset, the user starts dragging the glider, the last index would be zero
 						//and any dragging will be as if he is seeking forward
+						//NEVER DO THIS OUTSIDE OF THIS CONDITION (BEFORE PRESSING); it's handled by basecase1
 						FramesGliderController.setLastDisplayedIndexBeforeDragging(0);
 						return; 
 					} else {
@@ -252,9 +218,6 @@ public class FramesGlider {
 					}
 				}
 				updateFrameHBox(newValueAsInt); //dummy display (no actual change of buffer pointers)
-				//you don't have to set slider value; it's already set; and we can pick it up 
-				//from the fn now not the variable; this is actually what causes the flickering 
-//				setCurrSliderValue(newValueAsInt); 
 			} 
 
 		});
@@ -301,12 +264,13 @@ public class FramesGlider {
 		FramesGliderController.setMinRateReached(false);
 		FramesGliderController.setMaxRateReached(false);
 		bufferSize = FramesBufferController.getBuffer().size();
-		
+
 		setCurrBuffPtr(0); 
 		setCurrSliderValue(initSliderValue);//reset slider value
 		setStopPtr(-1);
 
 		if(totalFrames > bufferSize) {
+			FramesGlider.getSlider().setDisable(true); 
 			disableButtonsHBox();
 			//YOU only want to reset the last loaded frame, if you plan to load from the beginning
 			FramesGliderController.setLastLoadedFrame(0); 
@@ -324,11 +288,12 @@ public class FramesGlider {
 					FramesGlider.btnPlayPause = playPauseB;
 					FramesGlider.buttonsHBox.getChildren().set(btnPPIdx, playPauseB);
 					enableButtonsHBox();	
+					FramesGlider.getSlider().setDisable(false); 
 				}
 			});
 			MainController.execute(preloadFrames);
 		} else {
-			//no need to pre load
+			//no need to load
 			FramesGlider.isInitiallyPlaying = false; 
 			//===RE-INITIALIZE PLAYPAUSEBUTTON 
 			ImageToggleButton playPauseB= new ImageToggleButton(Constants.PLAY_IMG, Constants.PAUSE_IMG);
@@ -338,12 +303,11 @@ public class FramesGlider {
 			FramesGlider.btnPlayPause = playPauseB;
 			FramesGlider.buttonsHBox.getChildren().set(btnPPIdx, playPauseB);
 			enableButtonsHBox();
+			FramesGlider.getSlider().setDisable(false); 
 		}
 		
 		//add an intermediate black screen
 		displayBlackFrame();
-		
-				
 	}
 	
 	private static void displayBlackFrame() {
@@ -380,7 +344,6 @@ public class FramesGlider {
 
 	public static void updateFrameHBox(int frameIdx) {
 	//this signature's only used when we just display the frame the user is attempting to seek
-		//****
 		if(frameIdx == totalFrames) {
 			displayBlackFrame();
 			return;
@@ -396,7 +359,6 @@ public class FramesGlider {
 	
 	public static void updateFrameHBox() {
 		frameHBox.getChildren().remove(0);
-//		System.out.println("UPDATE FRAME: Current BUFFPTR: " + currBufferPtr);
 		ImageView iv = FramesBufferController.getBuffer().get(currBufferPtr);
 		iv.fitHeightProperty().bind(framesGliderSP.heightProperty());
 		frameHBox.getChildren().add(iv);
@@ -461,14 +423,10 @@ public class FramesGlider {
 
 	public static double getCurrSliderValue() {
 		return slider.getValue();
-//		return currSliderValue;
 	}
 
 	public static void setCurrSliderValue(double currSliderValue) {
-		//in our logic the slider value always 
-		//represents the frame to be displayed next
-//		FramesGlider.currSliderValue = currSliderValue;
-//		System.out.println("setting slider value to: " + currSliderValue);
+	//the slider value always represents the frame to be displayed next
 		slider.setValue(currSliderValue);
 	}
 
