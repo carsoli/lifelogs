@@ -80,14 +80,16 @@ public class FramesGliderController {
 		}
 	};
 
-	//NOT A PRESS AND HOLD CASE; just a fire event when the button is pressed (equivalent to knob rot)
+	//NOT A PRESS AND HOLD CASE; just a fire event when the button is pressed (equivalent to knob switch)
 	public static EventHandler<Event> acceleratorReleaseHandler = new EventHandler<Event>() {
 		@Override
 		public void handle(Event event) {
+			maxRateReached = false; 
 			//takes effect in the next cycle 
-			if(minRateReached) 
+			if(minRateReached) {
+				System.out.println("min rate reached");
 				return;
-//				System.out.println("Min Rate Reached");
+			}
 			Duration currRate = FramesGlider.getRate();
 			Duration newRate = currRate.subtract(accStep); //less time
 			if(newRate.compareTo(fastestRate) >0) {//newRate>0 
@@ -102,9 +104,12 @@ public class FramesGliderController {
 	public static EventHandler<Event> deceleratorReleaseHandler = new EventHandler<Event>() {
 		@Override
 		public void handle(Event event) {
+			minRateReached = false; 
 			//slowestRate already reached
-			if(maxRateReached) 
+			if(maxRateReached) {
+				System.out.println("max rate reached");
 				return;
+			}
 			Duration currRate = FramesGlider.getRate();
 			Duration newRate = currRate.add(decStep); //increase sleepTime of pauseTransition
 			if(newRate.compareTo(slowestRate) < 0){ //newRate < slowestRate 
@@ -121,6 +126,9 @@ public class FramesGliderController {
 		@Override
 		public void handle(Event event) {
 			FramesGlider.pausePauseTimer();
+			FramesGlider.getSlider().setDisable(true); 
+			//if we actually seek, and this is not disabled, then the user presses again while one task's executing
+			// in the bg, the resulting buffer will be unexpected 
 			event.consume();
 		}
 	};
@@ -185,6 +193,7 @@ public class FramesGliderController {
 				System.out.println("base case: 2====================");
 				setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
 				toggleSelectionAndBG();
+				FramesGlider.getSlider().setDisable(false);
 				FramesGlider.playPauseTimer();
 				return;
 			}
@@ -206,6 +215,7 @@ public class FramesGliderController {
 				FramesGlider.setStopPtr(-1);
 				setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
 				toggleSelectionAndBG();
+				FramesGlider.getSlider().setDisable(false);
 				FramesGlider.playPauseTimer();
 				return;
 			}
@@ -230,6 +240,7 @@ public class FramesGliderController {
 					//of anim loop, it will be set again properly
 					setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
 					toggleSelectionAndBG();
+					FramesGlider.getSlider().setDisable(false);
 					FramesGlider.playPauseTimer();
 					return;
 				}
@@ -307,6 +318,7 @@ public class FramesGliderController {
 							
 							setLastDisplayedIndexBeforeDragging(-1);//reset for the next mouse press
 							toggleSelectionAndBG();
+							FramesGlider.getSlider().setDisable(false);
 							FramesGlider.playPauseTimer();
 						}
 						
@@ -371,6 +383,7 @@ public class FramesGliderController {
 							System.out.println("========================");
 							setLastDisplayedIndexBeforeDragging(-1);
 							toggleSelectionAndBG();
+							FramesGlider.getSlider().setDisable(false);
 							FramesGlider.playPauseTimer();
 						}
 					});
@@ -433,6 +446,7 @@ public class FramesGliderController {
 	
 							setLastDisplayedIndexBeforeDragging(-1);
 							toggleSelectionAndBG();
+							FramesGlider.getSlider().setDisable(false);
 							FramesGlider.playPauseTimer();
 						}
 					});
@@ -472,6 +486,7 @@ public class FramesGliderController {
 		
 								setLastDisplayedIndexBeforeDragging(-1);
 								toggleSelectionAndBG();
+								FramesGlider.getSlider().setDisable(false);
 								FramesGlider.playPauseTimer();
 							}
 						});
@@ -503,6 +518,7 @@ public class FramesGliderController {
 		
 								setLastDisplayedIndexBeforeDragging(-1);
 								toggleSelectionAndBG();
+								FramesGlider.getSlider().setDisable(false);
 								FramesGlider.playPauseTimer();
 							}
 						});
