@@ -68,9 +68,12 @@ public final class Constants {
 	public static final boolean VIDEO_AUTOPLAY = false;
 	/*Also, FramesGlider constants*/
 	public static final int FPS = 10;  
-	public static final int FRAMES_BUFFER_SIZE = 50;
+	public static boolean GLIDER_AUTOPLAY = false; 
+	public static final int FRAMES_BUFFER_SIZE = 5;
 	public static final Duration GLIDER_INIT_RATE = Duration.millis((1/((double)Constants.FPS))*1000);
 	public static final Duration GLIDER_DEC_STEP = Duration.millis(((1/((double)Constants.FPS))*1000)/24);
+	//24 is the number of switches in the knob
 	public static final Duration GLIDER_ACC_STEP = Duration.millis(((1/((double)Constants.FPS))*1000)/24);
-	public static final Duration GLIDER_SLOWEST_RATE = Duration.millis((1/((double)Constants.FPS))*1000*3) ; //FPS=FPS*3
+	public static final Duration GLIDER_SLOWEST_RATE = Duration.millis((1/((double)Constants.FPS))*1000*30); 
+	
 }
