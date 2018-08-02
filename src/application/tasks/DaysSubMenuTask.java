@@ -7,6 +7,7 @@ import application.controller.MainController;
 import application.structs.Day;
 import application.controller.FramesBufferController;
 import application.structs.Participant;
+import application.utils.Constants;
 import application.utils.ImagesToVideoConverter;
 import application.view.FramesGlider;
 import application.view.VideoPlayer;
@@ -57,7 +58,7 @@ public class DaysSubMenuTask extends Task{
 					ViewUtils.getChooseParticipantSM().setDisable(true); 
 					ViewUtils.getCreateVideoSM().setDisable(true);
 					MainController.setChosenD(dayIdx); 
-					//============COMMENTED FOR NOW: DONT DELETE****
+					//============COMMENT WHEN YOU DON'T NEED THE VIDEOS TAB
 //					Task createVideoTask = new CreateVideoTask(dayIdx);
 //					MainController.addTask(createVideoTask);
 //					createVideoTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -81,7 +82,7 @@ public class DaysSubMenuTask extends Task{
 					FramesGliderController.setLastLoadedFrame(0);
 					//and curr buff ptr because we decide to load while one video is still playing,
 					//curr buff ptr would be out of bound
-					FramesGlider.setCurrBuffPtr(0);
+					FramesGlider.setCurrBuffPtr(0); //TODO: this should actually move to onSucceeded, not reset before loading while video is playing
 					long startTime = System.nanoTime();
 					Task preloadFrames = new PreloadFramesTask();
 					MainController.addTask(preloadFrames);
@@ -91,9 +92,8 @@ public class DaysSubMenuTask extends Task{
 			                Platform.runLater(new Runnable() {//Read Note in loadImagesTask.java
 		                        @Override
 		                        public void run() {
-		                        	//TODO: later make the autoPlay Controlled by the UI
 		                        	FramesGlider.initializeFrameGlider(
-		                        			FramesBufferController.getBuffer(), true, 
+		                        			FramesBufferController.getBuffer(), Constants.GLIDER_AUTOPLAY, 
 		                        			false);
 			                    	ViewUtils.getChooseParticipantSM().setDisable(false);
 			                    	ViewUtils.getCreateVideoSM().setDisable(false);
