@@ -90,6 +90,7 @@ public class FramesGliderController {
 				System.out.println("min rate reached");
 				return;
 			}
+			
 			Duration currRate = FramesGlider.getRate();
 			Duration newRate = currRate.subtract(accStep); //less time
 			if(newRate.compareTo(fastestRate) >0) {//newRate>0 
@@ -112,6 +113,7 @@ public class FramesGliderController {
 			}
 			Duration currRate = FramesGlider.getRate();
 			Duration newRate = currRate.add(decStep); //increase sleepTime of pauseTransition
+			System.out.println("new rate in dec handler: " + newRate);
 			if(newRate.compareTo(slowestRate) < 0){ //newRate < slowestRate 
 				FramesGlider.setRate(newRate);
 			} else {

@@ -88,8 +88,7 @@ public class VideoPlayerController {
 			VideoPlayer.getAccHoldTimer().playFromStart(); //start the timer
 		}
 	};
-
-	//TODO: handle the case where the user pressed both RIGHT and LEFT Keys 
+	//in case the user presses both right and left key simultaneously 
 	//we handle the right case first, and break; which won't make any effect for the left
 	//we can make the setRate call atomic
 	//we can remove the break, if we r sure both execute without any errors
@@ -133,7 +132,8 @@ public class VideoPlayerController {
 				mp.setRate(1);
 			}
 //			VideoPlayer.setDecPressedCycles(0);
-			VideoPlayer.setDec(0);
+			//gets reset with release, so even if it reaches min, it's reset for the next press&release
+			VideoPlayer.setDec(0); 
 			VideoPlayer.getDecHoldTimer().stop();
 		}
 		
@@ -205,7 +205,6 @@ public class VideoPlayerController {
         ));
 	}
 	
-	//INITIALLY IN MAIN CONTROLLER: 
 	public static void fireNoOpMouseEvent() {
 		TilePane cp = VideoPlayer.getControlPane();
 		if(cp == null) {
