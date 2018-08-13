@@ -4,17 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 
 import application.controller.MainController;
-import application.structs.DataSource;
 import application.structs.Day;
 import application.structs.Event;
-import application.utils.Constants;
+import application.structs.Participant;
 import application.view.ViewUtils;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.scene.control.MenuItem;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-
 
 /*
  * NOTE:
@@ -25,69 +21,46 @@ import javafx.scene.layout.HBox;
  * */
 @SuppressWarnings("rawtypes")
 public class LoadImagesTask extends Task {
-	private DataSource mDataSource;
-	
-	public LoadImagesTask(DataSource mDataSource) {
-		this.mDataSource = mDataSource;
-	}
 	
 	@Override
 	protected Object call() throws Exception {
-		loadParticipantImages(this.mDataSource);
+		loadParticipantImages();
 		return null;
 	}
 	
-	private static ArrayList<String> loadParticipantImages(DataSource mDataSource){
-		ArrayList<String> pathsArrayList = null;
+	private static void loadParticipantImages(){
 		if(MainController.getChosenP() != -1) {
-			ArrayList<Day> pDays= mDataSource.getData().get(MainController.getChosenP()).getDays();
+			Participant chosenParticipant = MainController.getmDataSource().getData().get(MainController.getChosenP());
+			if(chosenParticipant.getAllImages().size() >0) {
+				//if the same participant is chosen twice, we need to clear all images
+				chosenParticipant.getAllImages().clear();
+			}
+			ArrayList<Day> pDays= chosenParticipant.getDays();
 			for(Day d: pDays) {
 				ArrayList<Event> dEvents = d.getEvents();
-				//****************
 				//if the same day is loaded twice for any reason, 
 				//we would add the FImages for it twice(double the size)
 				//when calling "d.addFImage(i)" inside the inner-most forLoop
 				if(d.getFImages().size() > 0) {
 					d.getFImages().clear();
-//					System.out.println("cleared day fImages; d.getFImages().size(): " + d.getFImages().size());
 				}
 				
-				for(Event event :dEvents) {
+				for(Event event :dEvents) {					
 					File[] eventImages = event.getFImages();
-					
-						
-					
 					for(File i: eventImages) {
-						//for VideoPlayer
-						final ImageView gridImageView = ViewUtils.createImageView(i, 
-								Constants.IMAGE_SIZE, 0);
-						
+						//for GridDisplay, VideoPlayer and FramesGlider
 						d.addFImage(i); 
-
-						final HBox imageHBox = new HBox();
+						chosenParticipant.addToAllImages(i);
 						Platform.runLater(new Runnable() {
 			                public void run() {
-			                	//TODO: every image's loading runs on a separate background worker thread.
-			                	//will continue to add the images even if a new directory is chosen; fix this
-			                	//==cancel the task of loading or prevent further loading 
-			                	//in this case, also fic it by another way other than UI disabling the loading menu item
-			                	//TODO: order is messed bc the list is not ordered in the first place 
-			                	//and the Platform.RunLater does not execute in FIFO
-			                	//NOTE: do not remove the runLater (check the note at the top)
-			                	imageHBox.getChildren().add(gridImageView);
-			                	ViewUtils.getImagesTilePaneContainer().getChildren().add(imageHBox);
+			                	//adds an empty HBox initially, which is then replaced when displayingGridImages
+			                	ViewUtils.getImagesTilePaneContainer().getChildren().add(new HBox());
 			                }
 			            });
 					}
-					
 				}
-				int dayIdx = pDays.indexOf(d);
-				MenuItem currDay = ViewUtils.getCreateVideoSM().getItems().get(dayIdx);
-				currDay.setDisable(false);
 			}
 		}
-			
-		return pathsArrayList;
 	}
 
 }
