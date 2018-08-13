@@ -3,6 +3,7 @@ package application;
 import java.util.ArrayList;
 
 import application.controller.MainController;
+import application.utils.SerialComm;
 import application.view.ViewUtils;
 import javafx.application.Application;
 import javafx.concurrent.Task;
@@ -30,6 +31,7 @@ public class Main extends Application {
 	@Override
 	public void stop() throws Exception{
 		super.stop();//javafx thread
+		SerialComm.disconnectArduino();
 		stopGracefully();
 	}
 	
