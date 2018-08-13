@@ -140,7 +140,7 @@ public class MainController {
 				VideoPlayerController.fireNoOpMouseEvent();
 				//===============================
 				//NOT A PRESS AND HOLD
-				//WORKS BUT DON"T SPAM IT: SPAM THE MOUSE CLICKS (FASTER & DON'T BREAK)
+				//WORKS BUT DON"T SPAM IT: SPAM THE MOUSE CLICKS (FASTER & DOESN'T BREAK)
 				FramesGliderController.fireAcceleratorReleaseEvent();
 				FramesGliderController.fireNoOpMouseEvent();
 				
