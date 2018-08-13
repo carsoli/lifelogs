@@ -24,9 +24,9 @@ public class GenericLoadTask extends Task{
 	protected ArrayList<ImageView> call() throws Exception {
 		ViewUtils.sortChosenImages();//this sorts the chosenImages and uses the output to setFImages()
 		ArrayList<File> chosenImages = ViewUtils.getChosenImages();
-		//TODO: extremely redundant; 
+		//TODO: filling with null values is redundant; 
 		//but add(index,object) doesn't work randomly unless all are initialized to null
-		//instead; make buffer a hashmap that adds frames with the index as key :) 
+		//instead; make buffer a hashmap that adds frames with the index as key 
 		ArrayList<ImageView> resultList = new ArrayList<ImageView>(this.size);
 		for(int i=0; i<this.size; i++) {
 			resultList.add(i, null);
