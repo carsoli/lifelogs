@@ -15,12 +15,13 @@ public class Participant {
 	private String participantName; 
 	private File[] fDays; 
 	private ArrayList<Day> days; 
-	
+	private ArrayList<File> allImages;
 	
 	public Participant(File fParticipant) throws SecurityException {
 		this.participantName = fParticipant.getName(); //no need for a setter
 		this.fDays = setFDays(fParticipant);
 		this.days = new ArrayList<Day>();
+		this.allImages = new ArrayList<File>();
 	}
 	
 	private File[] setFDays(File fParticipants) {//filter out files that are not directories
@@ -43,19 +44,31 @@ public class Participant {
 	
 
 	public ArrayList<Day> getDays() {
-	    return days;
+	    return this.days;
     }
     
     public int getDaysCount() {
-    	return days.size();
+    	return this.days.size();
     }
     
-    public void setDays(ArrayList<Day> days) {
-    	this.days = days;
-    }
+//    public void setDays(ArrayList<Day> days) {
+//    	this.days = days;
+//    }
     
     public boolean addDay(Day day) {
-    	return days.add(day);
+    	return this.days.add(day);
+    }
+    
+    public ArrayList<File> getAllImages(){
+		return this.allImages;
+    }
+    
+    public void addToAllImages(File f) {
+    	this.allImages.add(f);
+    }
+    
+    public void setAllImages(ArrayList<File> allParticipantSortedImages) {
+    	this.allImages = allParticipantSortedImages;
     }
     
 }

@@ -82,8 +82,10 @@ public class Day {
 		this.fImages = list;
 	}
 	
-	public void addFImage(File img) {
-		fImages.add(img);
+	public void addFImage(File img) { 
+		//NOTE**: this is called by loadImagesTask
+		//this should be CLEARED when necessary 
+		this.fImages.add(img);
 	}
 	
 	
