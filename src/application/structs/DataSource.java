@@ -23,7 +23,7 @@ public final class DataSource {
 	private ArrayList<Participant> data;//All Participants' Data 
 	
 	public DataSource(String path) throws SecurityException {
-		data = new ArrayList<Participant>();
+		this.data = new ArrayList<Participant>();
 		//Absolute Path; thus listFiles instance methods returns absolute paths, as well
 		File root = new File(path);
 		File[] participants = root.listFiles(new FileFilter() {
@@ -59,32 +59,11 @@ public final class DataSource {
 			}
 			data.add(oParticipant);
 		}
-		}
+	}
 	
 	public ArrayList<Participant> getData(){
 		return data;
 	}
 	
-//	public ArrayList<String> getAllImagesPaths(int participantIndex){
-//		ArrayList<String> allImagesPaths = null;
-//		ArrayList<Day> pDays= this.data.get(participantIndex).getDays();
-//		
-//		for(Day d: pDays) {
-//			System.out.println("DAY: "+ d.getName());//debugging
-//			ArrayList<Event> dEvents = d.getEvents();
-//			for(Event e :dEvents) {
-//				ArrayList<Image> eventImages = e.getImages();
-//				for(Image i: eventImages) {
-//					try {
-//						allImagesPaths.add(i.getAbsolutePath());
-//					}
-//					catch( SecurityException imageFileE) {
-//						imageFileE.printStackTrace();
-//					}
-//				}
-//			}
-//		}
-//		return allImagesPaths;
-//	}	
 }
 

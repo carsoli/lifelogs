@@ -32,13 +32,13 @@ public class Event {
         this.images = new ArrayList<Image>();
     }
     
-    public Event(String name, String absolutePath, long size, ArrayList<Image> images) {
-        this.id = Util.generateUUID();
-        this.name = name;
-        this.absolutePath = absolutePath;
-        this.size = size;
-        this.images = images;
-    }
+//    public Event(String name, String absolutePath, long size, ArrayList<Image> images) {
+//        this.id = Util.generateUUID();
+//        this.name = name;
+//        this.absolutePath = absolutePath;
+//        this.size = size;
+//        this.images = images;
+//    }
 
     public boolean addImage(Image img){
         return images.add(img);
