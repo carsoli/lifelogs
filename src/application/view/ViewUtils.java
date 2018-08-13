@@ -15,7 +15,9 @@ import application.controller.MainController;
 import application.structs.DataSource;
 import application.tasks.ParticipantSubMenuTask;
 import application.utils.Constants;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -53,9 +55,9 @@ public class ViewUtils {
 		return createVideosSM;
 	}
 	
-	public static void setCreateVideoSM(Menu CVSM) {
-		createVideosSM = CVSM;
-	}
+//	public static void setCreateVideoSM(Menu CVSM) {
+//		createVideosSM = CVSM;
+//	}
 	
 	public static Menu getChooseParticipantSM() {
 		return chooseParticipantSM;
@@ -153,15 +155,18 @@ public class ViewUtils {
 		final DirectoryChooser dc = new DirectoryChooser();
 		dc.setTitle(Constants.DIRECTORY_NAVIGATOR_TITLE);
 		specMDirectoryMI.setOnAction(new EventHandler<ActionEvent>() {
+			@SuppressWarnings("unchecked")
 			public void handle(ActionEvent actionEvent) {
 				File rootFPath = dc.showDialog(mStage); 
 				if(rootFPath != null && rootFPath.isDirectory()) {
-					chooseParticipantSM.setDisable(false);
+//					chooseParticipantSM.setDisable(false);
+					chooseParticipantSM.setDisable(true); //will be enabled by end of createParticipantMenuTask
 					//reset:
 					createVideosSM.setDisable(true);
 					try {					
 						DataSource ds = new DataSource(rootFPath.getAbsolutePath());
-						ParticipantSubMenuTask.setMainDataSource(ds);
+//						ParticipantSubMenuTask.setMainDataSource(ds);
+						MainController.setmDataSource(ds);
 					}
 					catch(SecurityException se) {
 						System.out.println("Denied Access to the Chosen Directory");
@@ -173,6 +178,15 @@ public class ViewUtils {
 					}
 					@SuppressWarnings("rawtypes")
 					Task createPSMTask = new ParticipantSubMenuTask();
+					createPSMTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+						@Override
+						public void handle(WorkerStateEvent event) {
+							Platform.runLater(() -> {
+								chooseParticipantSM.setDisable(false); //once the menu is loaded, enable it
+							});
+						}
+						
+					});
 					MainController.addTask(createPSMTask);
 					MainController.execute(createPSMTask);
 				} 			
@@ -208,7 +222,7 @@ public class ViewUtils {
 	public static TabPane getMainTabPane() {
 		return mTabPane;
 	}
-
+	
 	public static void sortChosenImages() {
 		ArrayList<File> res = MainController.getmDataSource()
 				.getData().get(MainController.getChosenP())

@@ -96,7 +96,7 @@ public class FramesGlider {
 	}
 	
 	public static void initializeFrameGlider(ArrayList<ImageView> framesBuffer, boolean autoPlay, boolean isStopped) {
-//		SerialComm.initializeSerialPort();
+		SerialComm.initializeSerialPort();
 		totalFrames = ViewUtils.getChosenImages().size(); //All images for the user's chosenDay
 		FramesBufferController.setBuffer(framesBuffer); //limited size buffer
 		
@@ -280,7 +280,7 @@ public class FramesGlider {
 				@Override
 				public void handle(WorkerStateEvent event) {
 					FramesGlider.isInitiallyPlaying = false; 
-					//===RE-INITIALIZE PLAYPAUSEBUTTON ; TODO: move to a function
+					//===RE-INITIALIZE PLAYPAUSEBUTTON
 					ImageToggleButton playPauseB= new ImageToggleButton(Constants.PLAY_IMG, Constants.PAUSE_IMG);
 					playPauseB.setSelected(false);
 					playPauseB.addEventHandler(ActionEvent.ACTION, FramesGliderController.playPauseHandler);
