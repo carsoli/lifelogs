@@ -12,6 +12,8 @@ import application.view.ViewUtils;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.ScrollEvent;
+
 
 public class MainController {
 	private static int chosenP = -1; 
@@ -191,6 +193,13 @@ public class MainController {
 //		VideoPlayer.getVideoVBox().setOnKeyReleased(MainController.keyReleasedHandler);
 		ViewUtils.getMainScene().addEventFilter(KeyEvent.KEY_RELEASED, MainController.keyReleasedHandler);
 		ViewUtils.getMainScene().addEventFilter(KeyEvent.KEY_PRESSED, MainController.keyPressedHandler);
+//		ViewUtils.getMainScene().addEventFilter(ScrollEvent.ANY, new EventHandler<ScrollEvent>() {
+//			@Override
+//			public void handle(ScrollEvent event) {
+//				System.out.println("Scrolling");
+//			}
+//		});
+	
 	}
 	
 	public static int getChosenD() {

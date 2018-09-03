@@ -61,7 +61,6 @@ public final class Constants {
 	public static final String CODEC_NAME = null; //if unspecified, default's used
 	public static final int DEFAULT_IMAGE_WIDTH = 2592;
 	public static final int DEFAULT_IMAGE_HEIGHT = 1944;
-	public static final String VIDEO_STATIC_URL = "C:\\Users\\Carol\\eclipse-workspace\\lifelogs-videos\\PLarge0scaledDown.mp4";
 	/*Video: PostProcessing*/
 	public static final Path FFMPEG_BIN = Paths.get("C:\\Users\\Carol\\FFmpeg\\bin");
 	public static final String FFMPEG_EXE = "C:\\Users\\Carol\\FFmpeg\\bin\\ffmpeg.exe";
@@ -71,7 +70,7 @@ public final class Constants {
 	public static boolean GLIDER_AUTOPLAY = false; 
 	public static final int FRAMES_BUFFER_SIZE = 5;
 	public static final Duration GLIDER_INIT_RATE = Duration.millis((1/((double)Constants.FPS))*1000);
-	public static final Duration GLIDER_DEC_STEP = Duration.millis(((1/((double)Constants.FPS))*1000)/24);
+	public static final Duration GLIDER_DEC_STEP = Duration.millis(((1/((double)Constants.FPS))*1000)/24*3);
 	//24 is the number of switches in the knob
 	public static final Duration GLIDER_ACC_STEP = Duration.millis(((1/((double)Constants.FPS))*1000)/24);
 	public static final Duration GLIDER_SLOWEST_RATE = Duration.millis((1/((double)Constants.FPS))*1000*30); 

@@ -139,7 +139,6 @@ public class VideoPlayerController {
 		
 	};
 
-
 	public static void fireAcceleratorPressEvent(){
 		Button btnAcc = VideoPlayer.getBtnAccelerator();
 		if(btnAcc == null) {

@@ -53,8 +53,6 @@ import io.humble.video.awt.MediaPictureConverterFactory;
  * Instead of screen recording, I take in images from the data source, create a bufferedImage
  * then pass it to the convertor and do the same encoding job done in the demo
  * 
- * Additionally, and as per the project requirement, I make an Audio and add it to the picture
- * 
  * @author carsoli
  * @since June, 2018
  *
@@ -187,7 +185,7 @@ public class ImagesToVideoConverter {
 	  }
 
       if(videoPacket != null && picture != null) {
-    	  //c: there must be a better implementation, with a listener and a callback fn?????
+    	  //there must be a better implementation, with a listener and a callback fn?????
     	  do {
     		  videoPacket = MediaPacket.make();
 //    		  System.out.println("logging pckt size:" + packet.getSize());

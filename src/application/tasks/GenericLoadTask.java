@@ -46,7 +46,6 @@ public class GenericLoadTask extends Task{
 				System.out.println("failed to add image idx: " + c%this.size + " to newBuffer");
 				e.printStackTrace();
 			}
-//			System.out.println("added to new buffer: img index: " + c + "in buffer index: " + c%this.size );
 		}
 		
 		return resultList;

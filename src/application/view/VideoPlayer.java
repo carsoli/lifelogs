@@ -211,8 +211,6 @@ public class VideoPlayer {
 			System.out.println("acceleration: "+ acc);
 			System.out.println("new rate: "+ (initPlayRate + acc));
 			if(acc < maxAcc) {
-				System.out.println("did NOT exceed max acc");
-				System.out.println("==============================");
 				mp.setRate((initPlayRate + acc));
 			}
 			accHoldTimer.playFromStart();
@@ -225,8 +223,6 @@ public class VideoPlayer {
 			System.out.println("new rate:" + (initPlayRate + dec));
 
 			if(dec > minDec) {//comparing negative magnitudes
-				System.out.println("did NOT exceed min dec");
-				System.out.println("==============================");
 				mp.setRate((initPlayRate + dec));
 			}
 			decHoldTimer.playFromStart();

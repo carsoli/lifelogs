@@ -36,8 +36,7 @@ public class DaysSubMenuTask extends Task{
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static void initializeDaysSubMenu(
-			ArrayList<Participant> pArrayList) {
+	private static void initializeDaysSubMenu(ArrayList<Participant> pArrayList) {
 		
 		Menu createVideosSM = ViewUtils.getCreateVideoSM();
 		
@@ -55,6 +54,7 @@ public class DaysSubMenuTask extends Task{
 				createVideosSM.getItems().add(dItem);
 				dItem.setOnAction(e -> {
 					//close Arduino port; reopened during framesGliderInitialization call
+
 					SerialComm.disconnectArduino();
 					//until the curr vid is created, don't change the chosenP bc it's a global variable
 					ViewUtils.getChooseParticipantSM().setDisable(true); 
@@ -63,23 +63,23 @@ public class DaysSubMenuTask extends Task{
 					MainController.setChosenD(dayIdx); 
 					
 					//============COMMENT WHEN YOU DON'T NEED THE VIDEOS TAB
-					Task createVideoTask = new CreateVideoTask(dayIdx);
-					MainController.addTask(createVideoTask);
-					createVideoTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-						@Override
-						public void handle(WorkerStateEvent event) {
-			                Platform.runLater(new Runnable() {
-		                        @Override
-		                        public void run() {
-			                    	ImagesToVideoConverter.EncodeVideoAndClose();
-			                    	ViewUtils.getChooseParticipantSM().setDisable(false);
-			                    	ViewUtils.getCreateVideoSM().setDisable(false);
-			                    	VideoPlayer.postProcessVideo();
-		                        }
-			                });
-						}
-					});
-					MainController.execute(createVideoTask);
+//					Task createVideoTask = new CreateVideoTask(dayIdx);
+//					MainController.addTask(createVideoTask);
+//					createVideoTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+//						@Override
+//						public void handle(WorkerStateEvent event) {
+//			                Platform.runLater(new Runnable() {
+//		                        @Override
+//		                        public void run() {
+//			                    	ImagesToVideoConverter.EncodeVideoAndClose();
+//			                    	ViewUtils.getChooseParticipantSM().setDisable(false);
+//			                    	ViewUtils.getCreateVideoSM().setDisable(false);
+//			                    	VideoPlayer.postProcessVideo();
+//		                        }
+//			                });
+//						}
+//					});
+//					MainController.execute(createVideoTask);
 					//=================================
 					//whenever we choose a different day, we need to reset LLI
 					//this way the preloadFramesTask can load things correctly

@@ -93,6 +93,7 @@ public class FramesGliderController {
 			
 			Duration currRate = FramesGlider.getRate();
 			Duration newRate = currRate.subtract(accStep); //less time
+			System.out.println("new rate in acc handler: " + newRate);
 			if(newRate.compareTo(fastestRate) >0) {//newRate>0 
 				FramesGlider.setRate(newRate);
 			} else {
@@ -532,7 +533,6 @@ public class FramesGliderController {
 			}
 		}
 	};
-	
 	
 	public static void fireAcceleratorReleaseEvent(){
 		Button btnAcc = FramesGlider.getBtnAccelerator();
